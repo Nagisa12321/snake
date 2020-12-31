@@ -12,41 +12,59 @@ import java.awt.event.KeyEvent;
  * @date 2020/12/30 15:38
  */
 public class Snake {
-    private final MyQueue<Point> queue;
-    private Point head;
-    private final Color color;
+    private final MyQueue<Point> queue; // 由点组成的队列
+
+    private Point head; // 蛇的头的点
+
+    private final Color color; // 蛇的颜色
+
     private int direction; // 0上 1下 2左 3右
 
     public Snake(Point[] points, Color color) {
+        // 初始化蛇队列, 并且把点入队
         queue = new MyQueue<>();
         Point prev = null;
         for (int i = 0; i < points.length; i++) {
             queue.enqueue(points[i]);
-            PlayerMap.getBody().add(points[i]);
             if (i == points.length - 1) head = points[i];
             if (i == points.length - 2) prev = points[i];
+
+            // 添加入集中
+            PlayerMap.getBody().add(points[i]);
         }
+
+        // 上色
         this.color = color;
+
+        // 根据最后一个点、 倒数第二个点判定方向
         assert prev != null;
         this.direction = Point.getDirection(prev, head);
+
         head = points[points.length - 1];
 
     }
 
+    /* 通过前面的点来判断蛇该做出什么行为 */
     public void move(Point point) {
+        // 如果前面的点是body, 则退出游戏
         if (PlayerMap.getBody().contains(point))
             System.exit(0);
+
+        // 否则更新头部, 更新queue、set
         head = point;
         queue.enqueue(point);
         PlayerMap.getBody().add(point);
 
-
+        // 如果不是food则会出队
         if (!PlayerMap.isFood(point)) {
             Point point1 = queue.dequeue();
             PlayerMap.getBody().remove(point1);
+
+            // 如果是food则再随机生成一个
         } else PlayerMap.GenerateFood();
     }
 
+    /* 让蛇在其方向上前进一格 */
     public void goAHead() {
         int x = head.x();
         int y = head.y();
@@ -67,6 +85,7 @@ public class Snake {
         }
     }
 
+    /* 画出蛇 */
     public void draw(Graphics g) {
         Color c = g.getColor();
         g.setColor(color);
@@ -91,6 +110,7 @@ public class Snake {
         return head;
     }
 
+    /* 键盘监听: 上下左右 */
     public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         int x = head.x();
