@@ -1,6 +1,5 @@
 package com.struct;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -8,7 +7,7 @@ import java.util.Objects;
  * @version 1.0
  * @date 2020/12/30 16:15
  */
-public class Point implements Serializable {
+public class Point {
     private final int x;
     private final int y;
 

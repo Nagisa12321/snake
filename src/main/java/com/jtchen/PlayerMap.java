@@ -16,28 +16,28 @@ import java.util.HashSet;
  * @date 2020/12/30 16:42
  */
 public class PlayerMap extends Frame {
-    public static final Color HEAD_COLOR = Color.red; // ÉßÍ·²¿ÑÕÉ«
+    public static final Color HEAD_COLOR = Color.red; // è›‡å¤´éƒ¨é¢œè‰²
 
-    public static final Color FOOD_COLOR = Color.yellow; // Ê³ÎïÑÕÉ«
+    public static final Color FOOD_COLOR = Color.yellow; // é£Ÿç‰©é¢œè‰²
 
-    public static final int BLOCK = 20; // ·½¸ñ³¤¿í
+    public static final int BLOCK = 20; // æ–¹æ ¼é•¿å®½
 
-    public static final int LENGTH = 30; // ÕæÊµ³¤¿í
+    public static final int LENGTH = 30; // çœŸå®é•¿å®½
 
-    private static final int LENGTH_ROW = LENGTH + 2; // ½çÃæ·½¸ñĞĞ
+    private static final int LENGTH_ROW = LENGTH + 2; // ç•Œé¢æ–¹æ ¼è¡Œ
 
-    private static final int LENGTH_COL = LENGTH + 3; // ½çÃæ·½¸ñÁĞ
+    private static final int LENGTH_COL = LENGTH + 3; // ç•Œé¢æ–¹æ ¼åˆ—
 
-    private final Snake[] snakes; // µØÍ¼ÖĞµÄÉß
+    private final Snake[] snakes; // åœ°å›¾ä¸­çš„è›‡
 
-    private static Point foodPoint; // Ê³ÎïµÄµã
+    private static Point foodPoint; // é£Ÿç‰©çš„ç‚¹
 
-    private static final HashSet<Point> body = new HashSet<>(); // ÉíÌåµÄµã, ÅĞ¶¨loseÓÃ
+    private static final HashSet<Point> body = new HashSet<>(); // èº«ä½“çš„ç‚¹, åˆ¤å®šloseç”¨
 
     private Image offScreenImage = null;
 
     public PlayerMap(Snake[] snakes) {
-        /* ³õÊ¼»¯´°Ìå */
+        /* åˆå§‹åŒ–çª—ä½“ */
         this.snakes = snakes;
         this.setTitle("Snake");
         this.setSize(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
@@ -53,37 +53,37 @@ public class PlayerMap extends Frame {
         this.setResizable(false);
         this.setVisible(true);
 
-        // Éú³ÉÊ³Îï
+        // ç”Ÿæˆé£Ÿç‰©
         GenerateFood();
 
-        // Ìí¼Ó¼üÅÌ¼àÌı
-        /*addKeyListener(new KeyMonitor());
-*/
-        // ÏÈ»­³öµ±Ç°»­Ãæ
+        // æ·»åŠ é”®ç›˜ç›‘å¬
+        addKeyListener(new KeyMonitor());
+
+        // å…ˆç”»å‡ºå½“å‰ç”»é¢
         repaint();
 
-        // ¿ªÊ¼push-paintÏß³Ì
-        /*new Thread(new DrawThread()).start();*/
+        // å¼€å§‹push-paintçº¿ç¨‹
+        new Thread(new DrawThread()).start();
     }
 
     /* draw every snakes */
-    /*public void drawSnakes(Graphics g) {
+    public void drawSnakes(Graphics g) {
         for (Snake snake : snakes)
             snake.draw(g);
-    }*/
+    }
 
-    // »ñÈ¡ÉíÌåµÄµã
+    // è·å–èº«ä½“çš„ç‚¹
     public static HashSet<Point> getBody() {
         return body;
     }
 
-/*    // ÈÃÃ¿Ò»ÌõÉßÇ°½øÒ»¸ñ
+    // è®©æ¯ä¸€æ¡è›‡å‰è¿›ä¸€æ ¼
     public void pushSnake() {
         for (Snake snake : snakes)
             snake.goAHead();
-    }*/
+    }
 
-    // ÔÚµØÍ¼Ëæ»úÒ»µãÉú³ÉÊ³Îï
+    // åœ¨åœ°å›¾éšæœºä¸€ç‚¹ç”Ÿæˆé£Ÿç‰©
     public static void GenerateFood() {
         int x = (int) (Math.random() * LENGTH);
         int y = (int) (Math.random() * LENGTH);
@@ -95,13 +95,13 @@ public class PlayerMap extends Frame {
             foodPoint = new Point(x, y);
     }
 
-    /*// »­³öÉßºÍÊ³Îï
+    // ç”»å‡ºè›‡å’Œé£Ÿç‰©
     public void draw(Graphics g) {
         drawSnakes(g);
         drawFood(g);
-    }*/
+    }
 
-    // »­³öÊ³Îï
+    // ç”»å‡ºé£Ÿç‰©
     public void drawFood(Graphics g) {
         Color c = g.getColor();
         g.setColor(FOOD_COLOR);
@@ -115,47 +115,47 @@ public class PlayerMap extends Frame {
 
     }
 
-    // ÅĞ¶¨Ä³¸öµãÊÇ·ñÎªÊ³ÎïµÄµã
+    // åˆ¤å®šæŸä¸ªç‚¹æ˜¯å¦ä¸ºé£Ÿç‰©çš„ç‚¹
     public static boolean isFood(Point point) {
         return point.equals(foodPoint);
     }
 
 
-    /*// ¸üĞÂ/ÖØ»­Ãæ°å
+    // æ›´æ–°/é‡ç”»é¢æ¿
     public void update(Graphics g) {
-        // ÈôĞéÄâ»­²¼Îª¿Õ, ĞÂ½¨ĞéÄâ»­²¼
+        // è‹¥è™šæ‹Ÿç”»å¸ƒä¸ºç©º, æ–°å»ºè™šæ‹Ÿç”»å¸ƒ
         if (offScreenImage == null)
             offScreenImage = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
         Graphics graphics = offScreenImage.getGraphics();
 
-        // ÏÈ°ÑÄÚÈİ»­ÔÚĞéÄâ»­²¼ÉÏ
+        // å…ˆæŠŠå†…å®¹ç”»åœ¨è™šæ‹Ÿç”»å¸ƒä¸Š
         paint(graphics);
 
-        //È»ºó½«ĞéÄâ»­²¼ÉÏµÄÄÚÈİÒ»Æğ»­ÔÚ»­²¼ÉÏ
+        //ç„¶åå°†è™šæ‹Ÿç”»å¸ƒä¸Šçš„å†…å®¹ä¸€èµ·ç”»åœ¨ç”»å¸ƒä¸Š
         g.drawImage(offScreenImage, 0, 0, null);
 
         //draw snakes and food
         draw(g);
-    }*/
+    }
 
     /**
-     * °ÑÄãÏëÒªµÄ×ø±ê×ª»»Îª»­²¼ÉÏµÄ×ø±ê
-     * PS: »­²¼×óÉÏ½ÇÎª(0, 0), ÇÒÄãÊäÈë{@code new Point(0, 0)}¼´¿É
+     * æŠŠä½ æƒ³è¦çš„åæ ‡è½¬æ¢ä¸ºç”»å¸ƒä¸Šçš„åæ ‡
+     * PS: ç”»å¸ƒå·¦ä¸Šè§’ä¸º(0, 0), ä¸”ä½ è¾“å…¥{@code new Point(0, 0)}å³å¯
      */
     public static Point toFillParameter(Point point) {
         return new Point(point.x() + 1, point.y() + 2);
     }
 
 
-   /* *//* ¼üÅÌ¼àÌıÆ÷ *//*
+    /* é”®ç›˜ç›‘å¬å™¨ */
     private class KeyMonitor extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            // ¿Õ¸ñÔòÍË³ö
+            // ç©ºæ ¼åˆ™é€€å‡º
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                 System.exit(0);
 
-                // ÆäËûÔò´«¸øÉßµÄ¼àÌıÆ÷
+                // å…¶ä»–åˆ™ä¼ ç»™è›‡çš„ç›‘å¬å™¨
             } else {
                 snakes[0].keyPressed(e);
                 repaint();
@@ -164,7 +164,7 @@ public class PlayerMap extends Frame {
 
     }
 
-    *//* ĞÂÏß³Ì×¨ÃÅ¸ºÔğÃ¿¸ônºÁÃëÍÆ¶¯ÉßÒ»´Î²¢ÇÒÖØ»­ *//*
+    /* æ–°çº¿ç¨‹ä¸“é—¨è´Ÿè´£æ¯éš”næ¯«ç§’æ¨åŠ¨è›‡ä¸€æ¬¡å¹¶ä¸”é‡ç”» */
     public class DrawThread implements Runnable {
         @Override
         public void run() {
@@ -178,7 +178,7 @@ public class PlayerMap extends Frame {
                 }
             }
         }
-    }*/
+    }
 
     public static void main(String[] args) {
         Snake snake = new Snake(new Point[]{new Point(1, 0), new Point(1, 1),
