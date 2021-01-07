@@ -24,6 +24,8 @@ public class SnakeGUI {
     private JTextField textField2;
 
     public SnakeGUI() {
+        textField1.setText("localhost");
+        textField2.setText("hah");
         HOSTAGAMEButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -31,9 +33,6 @@ public class SnakeGUI {
                 new Thread(new UDPServerMain()).start();
             }
         });
-    }
-
-    public SnakeGUI() {
         JOINAGAMEButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String name = textField2.getText();

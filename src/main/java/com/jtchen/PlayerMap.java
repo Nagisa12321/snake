@@ -67,10 +67,10 @@ public class PlayerMap extends Frame {
     }
 
     /* draw every snakes */
-    public void drawSnakes(Graphics g) {
+    /*public void drawSnakes(Graphics g) {
         for (Snake snake : snakes)
             snake.draw(g);
-    }
+    }*/
 
     // 获取身体的点
     public static HashSet<Point> getBody() {
@@ -95,11 +95,11 @@ public class PlayerMap extends Frame {
             foodPoint = new Point(x, y);
     }
 
-    // 画出蛇和食物
+    /*// 画出蛇和食物
     public void draw(Graphics g) {
         drawSnakes(g);
         drawFood(g);
-    }
+    }*/
 
     // 画出食物
     public void drawFood(Graphics g) {
@@ -121,7 +121,7 @@ public class PlayerMap extends Frame {
     }
 
 
-    // 更新/重画面板
+    /*// 更新/重画面板
     public void update(Graphics g) {
         // 若虚拟画布为空, 新建虚拟画布
         if (offScreenImage == null)
@@ -136,7 +136,7 @@ public class PlayerMap extends Frame {
 
         //draw snakes and food
         draw(g);
-    }
+    }*/
 
     /**
      * 把你想要的坐标转换为画布上的坐标

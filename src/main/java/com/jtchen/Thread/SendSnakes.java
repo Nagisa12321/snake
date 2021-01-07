@@ -55,9 +55,12 @@ public class SendSnakes implements Runnable {
                 String operation = nAo.Op;
 
                 System.out.println("玩家 " + name + "发起了动作: " + operation);
-
+                System.out.println("name.size()" + name.length());
+                System.out.println("hashmap size: " + snakes.size());
                 // 由name得到蛇
                 Snake snake = snakes.get(name);
+
+                System.out.println("snake : " + snake);
 
                 // 由operation 和 具体snake操作蛇
                 // 如果snake 撞到body, 则移除snake
@@ -101,7 +104,7 @@ public class SendSnakes implements Runnable {
                 if (direction != 3) {
                     Point movePoint = new Point(x - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--x) : --x, y);
                     snake.setDirection(2);
-
+                    System.err.println("snake.setDirection(2);" + snake.getDirection());
                     // 如果将要遇到的是食物, 则在生成食物
                     if (movePoint.equals(foodPoint)) GenerateFood();
 
@@ -155,7 +158,7 @@ public class SendSnakes implements Runnable {
 
         for (var c : clientInfos) {
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket(new byte[0], 0, InetAddress.getByName("127.0.0.1"), 1688);
+            DatagramPacket packet = new DatagramPacket(new byte[4096], 4096, c.getIP(), c.getPORT());
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
             // 转为Object流

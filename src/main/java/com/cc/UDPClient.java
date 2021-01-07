@@ -1,5 +1,6 @@
 package com.cc;
 
+import com.jtchen.PlayerMap;
 import com.struct.Point;
 import com.struct.Snake;
 import com.struct.UDPSnake;
@@ -80,12 +81,16 @@ public class UDPClient extends Frame implements Runnable {
             snakes = nowDraw.getSnakes();
             food = nowDraw.getFood();
 
+
             //..
             if (!snakes.containsKey(playerName)){
                 socket.close();
                 return;
             }
+
+
             repaint();
+            System.err.println("repaint");
         }
     }
 
@@ -99,7 +104,25 @@ public class UDPClient extends Frame implements Runnable {
     public void drawSnakes(Graphics g) {
         for (var entry : snakes.entrySet()) {
             Snake snake = entry.getValue();
-            snake.draw(g);
+            System.err.println("方向： " + snake.getDirection());
+
+            Color c = g.getColor();
+            g.setColor(snake.getColor());
+
+            //draw point
+            for (Point point : snake.getQueue()) {
+                g.fillRect(toFillParameter(point).x()
+                        * BLOCK, toFillParameter(point).y()
+                        * BLOCK, BLOCK, BLOCK);
+            }
+
+            // draw head
+            g.setColor(PlayerMap.HEAD_COLOR);
+            g.fillRect(PlayerMap.toFillParameter(snake.getHead()).x()
+                    * PlayerMap.BLOCK, PlayerMap.toFillParameter(snake.getHead()).y()
+                    * PlayerMap.BLOCK, PlayerMap.BLOCK, PlayerMap.BLOCK);
+
+            g.setColor(c);
         }
     }
 
@@ -149,7 +172,7 @@ public class UDPClient extends Frame implements Runnable {
             DatagramPacket respond = new DatagramPacket(new byte[1], 1);
 
             //poke一下服务器,超时抛异常
-            socket.setSoTimeout(5000);
+            //socket.setSoTimeout(5000);
             socket.send(request);
             socket.receive(respond);
 

@@ -4,6 +4,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
 public class GetOperation implements Runnable{
@@ -25,7 +26,8 @@ public class GetOperation implements Runnable{
                 socket.receive(packet);
 
                 // 收到的是String 是操作和name组合,
-                String opStr = new String(buff);
+                String opStr = new String(buff,
+                        0, packet.getLength(), StandardCharsets.UTF_8);
 
                 // 加入队列中, 让SendSnakes解析操作并且处理
                 operation.add(opStr);

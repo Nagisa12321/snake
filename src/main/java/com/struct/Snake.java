@@ -20,6 +20,14 @@ public class Snake implements Serializable {
 
     private Point head; // 蛇的头的点
 
+    public Queue<Point> getQueue() {
+        return queue;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
     private final Color color; // 蛇的颜色
 
     private int direction; // 0上 1下 2左 3右
@@ -96,26 +104,6 @@ public class Snake implements Serializable {
         }
     }*/
 
-    /* 画出蛇 */
-    public void draw(Graphics g) {
-        Color c = g.getColor();
-        g.setColor(color);
-
-        //draw point
-        for (Point point : queue) {
-            g.fillRect(PlayerMap.toFillParameter(point).x()
-                    * PlayerMap.BLOCK, PlayerMap.toFillParameter(point).y()
-                    * PlayerMap.BLOCK, PlayerMap.BLOCK, PlayerMap.BLOCK);
-        }
-
-        // draw head
-        g.setColor(PlayerMap.HEAD_COLOR);
-        g.fillRect(PlayerMap.toFillParameter(head).x()
-                * PlayerMap.BLOCK, PlayerMap.toFillParameter(head).y()
-                * PlayerMap.BLOCK, PlayerMap.BLOCK, PlayerMap.BLOCK);
-
-        g.setColor(c);
-    }
 
     public Point getHead() {
         return head;
