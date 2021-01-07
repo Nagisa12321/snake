@@ -19,17 +19,17 @@ import java.util.HashSet;
 import java.util.Vector;
 
 public class SendSnakes implements Runnable {
-    public static final int LENGTH = 30; // çœŸå®é•¿å®½
+    public static final int LENGTH = 30; // ÕæÊµ³¤¿í
 
-    private Vector<ClientInfo> clientInfos; // ç”¨æˆ·IP PORTåˆ—è¡¨
+    private Vector<ClientInfo> clientInfos; // ÓÃ»§IP PORTÁĞ±í
 
-    private Vector<String> operation; // æ“ä½œé˜Ÿåˆ—
+    private Vector<String> operation; // ²Ù×÷¶ÓÁĞ
 
-    private HashMap<String, Snake> snakes; // è›‡
+    private HashMap<String, Snake> snakes; // Éß
 
-    private Point foodPoint; // é£Ÿç‰©çš„ç‚¹
+    private Point foodPoint; // Ê³ÎïµÄµã
 
-    private HashSet<Point> body; // èº«ä½“ç‚¹é›†
+    private HashSet<Point> body; // ÉíÌåµã¼¯
 
     public SendSnakes(Vector<ClientInfo> clientInfos,
                       Vector<String> operation,
@@ -40,7 +40,7 @@ public class SendSnakes implements Runnable {
         this.snakes = snakes;
         this.body = body;
 
-        // åœ°å›¾éšæœºç”Ÿæˆé£Ÿç‰©
+        // µØÍ¼Ëæ»úÉú³ÉÊ³Îï
         GenerateFood();
     }
 
@@ -49,28 +49,36 @@ public class SendSnakes implements Runnable {
         while (true) {
             if (clientInfos.isEmpty()) continue;
             if (!operation.isEmpty()) {
-                // è§£æä¸€ä¸ªSnakeçš„nameå’ŒåŠ¨ä½œ
+                // ½âÎöÒ»¸öSnakeµÄnameºÍ¶¯×÷
                 NameAndOperation nAo = getNameAndOperation();
                 String name = nAo.name;
                 String operation = nAo.Op;
 
-                // ç”±nameå¾—åˆ°è›‡
+                System.out.println("Íæ¼Ò " + name + "·¢ÆğÁË¶¯×÷: " + operation);
+
+                // ÓÉnameµÃµ½Éß
                 Snake snake = snakes.get(name);
 
-                // ç”±operation å’Œ å…·ä½“snakeæ“ä½œè›‡
-                // å¦‚æœsnake æ’åˆ°body, åˆ™ç§»é™¤snake
+                // ÓÉoperation ºÍ ¾ßÌåsnake²Ù×÷Éß
+                // Èç¹ûsnake ×²µ½body, ÔòÒÆ³ısnake
                 if (!moveSnake(operation, snake)) {
                     snakes.remove(name);
+                    System.out.println("Íæ¼Ò " + name + "ËÀµôÁË, ÒÑ¾­´Ó±íÖĞÒÆ³ı");
                 }
 
-                // éå†ç©å®¶åˆ—è¡¨ å‘é€UDPSnakesç»™ç©å®¶ä»¬
+                // ±éÀúÍæ¼ÒÁĞ±í ·¢ËÍUDPSnakes¸øÍæ¼ÒÃÇ
+                try {
+                    SendUDPSnakes();
+                } catch (IOException e) {
+                    System.err.println(e.getMessage() + "·¢ËÍUDPSnakes¸øÍæ¼ÒÃÇÊ§°Ü!");
+                }
             }
         }
     }
 
-    /* è§£æå­—ç¬¦ä¸² è·å¾—nameå’Œop */
+    /* ½âÎö×Ö·û´® »ñµÃnameºÍop */
     public NameAndOperation getNameAndOperation() {
-        // å‡ºé˜Ÿä¸€ä¸ªname å’Œ op çš„ String å¹¶ä¸”è§£æä¸€ç•ª
+        // ³ö¶ÓÒ»¸öname ºÍ op µÄ String ²¢ÇÒ½âÎöÒ»·¬
         String s = operation.remove(0);
 
         String[] tmp = s.split(" ");
@@ -79,26 +87,26 @@ public class SendSnakes implements Runnable {
         return new NameAndOperation(name, op);
     }
 
-    /* æ ¹æ®å‡ºé˜Ÿçš„æ“ä½œç§»åŠ¨æŸæ¡è›‡, å¹¶ä¸”æ”¹å˜è›‡çš„æ–¹å‘ */
+    /* ¸ù¾İ³ö¶ÓµÄ²Ù×÷ÒÆ¶¯Ä³ÌõÉß, ²¢ÇÒ¸Ä±äÉßµÄ·½Ïò */
     public boolean moveSnake(String operation, Snake snake) {
         int direction = snake.getDirection();
 
         int x = snake.getHead().x();
         int y = snake.getHead().y();
 
-        // åˆ¤æ–­æ˜¯å¦æ–¹å‘æ”¹å˜ å¹¶ä¸”é‡æ–°æ”¹å˜æ–¹å‘
+        // ÅĞ¶ÏÊÇ·ñ·½Ïò¸Ä±ä ²¢ÇÒÖØĞÂ¸Ä±ä·½Ïò
         switch (operation) {
-            // 0ä¸Š 1ä¸‹ 2å·¦ 3å³
+            // 0ÉÏ 1ÏÂ 2×ó 3ÓÒ
             case "left":
                 if (direction != 3) {
                     Point movePoint = new Point(x - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--x) : --x, y);
                     snake.setDirection(2);
 
-                    // å¦‚æœå°†è¦é‡åˆ°çš„æ˜¯é£Ÿç‰©, åˆ™åœ¨ç”Ÿæˆé£Ÿç‰©
+                    // Èç¹û½«ÒªÓöµ½µÄÊÇÊ³Îï, ÔòÔÚÉú³ÉÊ³Îï
                     if (movePoint.equals(foodPoint)) GenerateFood();
 
-                    // å¦‚æœç§»åŠ¨è›‡å‰é¢æ˜¯bodyåˆ™ç§»åŠ¨å¤±è´¥
-                    // è¿”å›false
+                    // Èç¹ûÒÆ¶¯ÉßÇ°ÃæÊÇbodyÔòÒÆ¶¯Ê§°Ü
+                    // ·µ»Øfalse
                     return snake.move(movePoint, foodPoint, body);
                 }
             case "up":
@@ -123,13 +131,13 @@ public class SendSnakes implements Runnable {
                     return snake.move(movePoint, foodPoint, body);
                 }
         }
-        // å¦‚æœä»€ä¹ˆéƒ½æ²¡å‘ç”Ÿåˆ™è¿”å›true
-        // æ¯”å¦‚è¯´è›‡çš„æ–¹å‘æ˜¯å‘å‰, ä½ æŒ‰äº†å, åˆ™ä»€ä¹ˆä¹Ÿæ²¡å‘ç”Ÿ
-        // æ¢å¥è¯è¯´ è›‡ä¸æ­»çš„è¯è¿”å›true
+        // Èç¹ûÊ²Ã´¶¼Ã»·¢ÉúÔò·µ»Øtrue
+        // ±ÈÈçËµÉßµÄ·½ÏòÊÇÏòÇ°, Äã°´ÁËºó, ÔòÊ²Ã´Ò²Ã»·¢Éú
+        // »»¾ä»°Ëµ Éß²»ËÀµÄ»°·µ»Øtrue
         return true;
     }
 
-    // åœ¨åœ°å›¾éšæœºä¸€ç‚¹ç”Ÿæˆé£Ÿç‰©
+    // ÔÚµØÍ¼Ëæ»úÒ»µãÉú³ÉÊ³Îï
     public void GenerateFood() {
         int x = (int) (Math.random() * LENGTH);
         int y = (int) (Math.random() * LENGTH);
@@ -141,7 +149,7 @@ public class SendSnakes implements Runnable {
             foodPoint = new Point(x, y);
     }
 
-    /* å‘æ¯ä¸ªç©å®¶å‘é€UDPSnakes */
+    /* ÏòÃ¿¸öÍæ¼Ò·¢ËÍUDPSnakes */
     public void SendUDPSnakes() throws IOException {
         UDPSnake snake = new UDPSnake(snakes, foodPoint);
 
@@ -150,12 +158,12 @@ public class SendSnakes implements Runnable {
             DatagramPacket packet = new DatagramPacket(new byte[0], 0, InetAddress.getByName("127.0.0.1"), 1688);
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
-            // è½¬ä¸ºObjectæµ
+            // ×ªÎªObjectÁ÷
             ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
             objectStream.writeObject(snake);
             byte[] arr = byteArrayStream.toByteArray();
-            packet.setData(arr);//å¡«å……DatagramPacket
-            socket.send(packet);//å‘é€
+            packet.setData(arr);//Ìî³äDatagramPacket
+            socket.send(packet);//·¢ËÍ
             objectStream.close();
             byteArrayStream.close();
         }

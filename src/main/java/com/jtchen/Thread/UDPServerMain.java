@@ -28,37 +28,41 @@ public class UDPServerMain {
     }
 
     public static void main(String[] args) {
-        // mainå’ŒGetOperationç»´æŠ¤çš„ç©å®¶åˆ—è¡¨
+        System.out.println("ÒÑ¿ªÆô·şÎñÆ÷mainº¯Êı!");
+
+        // mainºÍGetOperationÎ¬»¤µÄÍæ¼ÒÁĞ±í
         Vector<ClientInfo> clientInfos = new Vector<>();
 
-        // SendSnakeså’ŒGetOperationç»´æŠ¤çš„æ“ä½œé˜Ÿåˆ—
+        // SendSnakesºÍGetOperationÎ¬»¤µÄ²Ù×÷¶ÓÁĞ
         Vector<String> operation = new Vector<>();
 
-        // mainå’ŒSendSnakesç»´æŠ¤çš„snakes map
-        // SendSnakeså¦‚æœmove snakeå¤±è´¥äº†å¯ä»¥ä»è¡¨ä¸­åˆ é™¤
+        // mainºÍSendSnakesÎ¬»¤µÄsnakes map
+        // SendSnakesÈç¹ûmove snakeÊ§°ÜÁË¿ÉÒÔ´Ó±íÖĞÉ¾³ı
         HashMap<String, Snake> snakes = new HashMap<>();
 
-        // mainå’ŒSnakeç»´æŠ¤çš„èº«ä½“ç‚¹é›†
+        // mainºÍSnakeÎ¬»¤µÄÉíÌåµã¼¯
         HashSet<Point> body = new HashSet<>();
 
-        // å¼€å¯æ”¶çº¿ç¨‹
+        // ¿ªÆôÊÕÏß³Ì
         new Thread(new SendSnakes(clientInfos, operation, snakes, body)).start();
         new Thread(new GetOperation(operation)).start();
 
         while (true) {
             try (DatagramSocket socket = new DatagramSocket(PORT)) {
 
-                // å»ºç«‹é“¾æ¥
+                // ½¨Á¢Á´½Ó
                 DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
                 socket.receive(packet);
                 int clientPort = packet.getPort();
                 InetAddress clientIP = packet.getAddress();
 
-                // æ–°å¢ç©å®¶
+                // ĞÂÔöÍæ¼Ò
                 clientInfos.add(new ClientInfo(clientPort, clientIP));
 
-                // æ–°å¢è›‡
+                // ĞÂÔöÉß
                 String name = new String(packet.getData());
+
+                System.out.println("ÓĞÎ»Íæ¼Ò½øÈëÁË·şÎñÆ÷ id: " + name);
 
                 Point p1 = new Point(1, 0);
                 Point p2 = new Point(1, 1);
@@ -66,15 +70,15 @@ public class UDPServerMain {
 
                 Snake snake = new Snake(new Point[]{p1, p2, p3}, randomColor());
 
-                // åŠ å…¥ç‚¹é›†
+                // ¼ÓÈëµã¼¯
                 body.add(p1);
                 body.add(p2);
                 body.add(p3);
 
-                // åœ¨åªè¯»çš„HashMap ä¸­å­˜å…¥Snake
+                // ÔÚÖ»¶ÁµÄHashMap ÖĞ´æÈëSnake
                 snakes.put(name, snake);
 
-                // å‘é€é“¾æ¥æˆåŠŸçš„æ¶ˆæ¯
+                // ·¢ËÍÁ´½Ó³É¹¦µÄÏûÏ¢
                 socket.send(new DatagramPacket(new byte[1], 1));
             } catch (IOException e) {
                 System.err.println(e.getMessage());
