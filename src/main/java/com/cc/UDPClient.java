@@ -82,8 +82,10 @@ public class UDPClient extends Frame implements Runnable {
         addKeyListener(new KeyMonitor());
 
         while (true) {
-            if (drawQueue.isEmpty())
+            if (drawQueue.isEmpty()){
+                repaint();
                 continue;
+            }
 
             //消息队列取出snakes表
             UDPSnake nowDraw = drawQueue.remove(0);
