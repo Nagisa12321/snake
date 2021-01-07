@@ -35,8 +35,12 @@ public class UDPClientSend implements Runnable {
         try {
             while (true) {
                 if (keyboardQueue.isEmpty()) continue;
+
+                //拼接消息串
                 String msg = playerName + " " + EventMap.get(keyboardQueue.remove(0));
                 byte[] msgBody = msg.getBytes(StandardCharsets.UTF_8);
+
+                //发送给服务器
                 DatagramPacket msgPacket = new DatagramPacket(msgBody, msgBody.length, serverIP, serverPort);
                 socket.send(msgPacket);
             }

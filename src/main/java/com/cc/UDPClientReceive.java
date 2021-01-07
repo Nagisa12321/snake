@@ -30,6 +30,7 @@ public class UDPClientReceive implements Runnable {
                 ByteArrayInputStream bs = new ByteArrayInputStream(buff);
                 ObjectInputStream os = new ObjectInputStream(bs);
 
+                //反序列化对象
                 UDPSnake msgOfSnake = (UDPSnake)os.readObject();
                 os.close();
                 bs.close();

@@ -81,18 +81,20 @@ public class UDPClient extends Frame implements Runnable {
             if (drawQueue.isEmpty())
                 continue;
 
-
+            //消息队列取出snakes表
             UDPSnake nowDraw = drawQueue.remove(0);
             snakes = nowDraw.getSnakes();
             food = nowDraw.getFood();
 
 
-            //..
+            //检查蛇是不是si了
             if (!snakes.containsKey(playerName)){
                 socket.close();
                 this.dispose();
                 return;
             }
+
+            //每次都收到消息重画画板
             repaint();
         }
     }
@@ -153,6 +155,8 @@ public class UDPClient extends Frame implements Runnable {
         //双缓冲技术，填充内存画板
         gBuffer.setColor(Color.WHITE);
         gBuffer.fillRect(0,0,LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
+
+        //画蛇画食物(在内存画板上)
         draw(gBuffer);
         paint(gBuffer);
 
@@ -171,6 +175,7 @@ public class UDPClient extends Frame implements Runnable {
 
     private DatagramSocket establish(InetAddress serverIp, int serverPort, String name) {
         try {
+            //准备好发送的包，端口随机
             DatagramSocket socket = new DatagramSocket(0);
             byte[] sendName = name.getBytes(StandardCharsets.UTF_8);
             DatagramPacket request = new DatagramPacket(sendName, sendName.length, serverIp, serverPort);
@@ -192,13 +197,14 @@ public class UDPClient extends Frame implements Runnable {
     private class KeyMonitor extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
-            // 空格则退出
-            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+            // ESC退出
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 System.exit(0);
 
-                //加入队列
+                //如果是上下左右,加入消息队列给UDPClientSend
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
                     e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
+
                 keyboardQueue.add(e.getKeyCode());
             }
         }
