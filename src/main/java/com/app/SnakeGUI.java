@@ -1,6 +1,11 @@
 package com.app;
 
+import com.cc.UDPClient;
+
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.UnknownHostException;
 
 /**
  * @author jtchen
@@ -13,6 +18,27 @@ public class SnakeGUI {
     private JButton HOSTAGAMEButton;
     private JTextField textField1;
     private JTextField textField2;
+
+    public SnakeGUI() {
+        JOINAGAMEButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String name = textField2.getText();
+                String host = textField1.getText();
+                try {
+                    if (name.isEmpty() || host.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        Runnable client = new UDPClient(name, host);
+                        new Thread(client).start();
+                    }
+                } catch (UnknownHostException a) {
+                    JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
+                    System.err.println(a.getMessage());
+                }
+
+            }
+        });
+    }
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("SnakeGUI");
