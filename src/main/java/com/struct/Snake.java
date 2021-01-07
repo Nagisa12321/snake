@@ -5,15 +5,17 @@ import com.struct.Point;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
 /**
  * @author jtchen
  * @version 1.0
  * @date 2020/12/30 15:38
  */
-public class Snake {
+public class Snake implements Serializable {
     private final Queue<Point> queue; // 由点组成的队列
 
     private Point head; // 蛇的头的点
@@ -55,27 +57,26 @@ public class Snake {
     }
 
     /* 通过前面的点来判断蛇该做出什么行为 */
-    public void move(Point point) {
+    public boolean move(Point point, Point foodPoint, Set<Point> body) {
         // 如果前面的点是body, 则退出游戏
-        if (PlayerMap.getBody().contains(point))
-            System.exit(0);
+        if (body.contains(point))
+            return false;
 
         // 否则更新头部, 更新queue、set
         head = point;
         queue.offer(point);
-        PlayerMap.getBody().add(point);
+        body.add(point);
 
         // 如果不是food则会出队
-        if (!PlayerMap.isFood(point)) {
+        if (point != foodPoint) {
             Point point1 = queue.poll();
-            PlayerMap.getBody().remove(point1);
-
-            // 如果是food则再随机生成一个
-        } else PlayerMap.GenerateFood();
+            body.remove(point1);
+        }
+        return true;
     }
 
     /* 让蛇在其方向上前进一格 */
-    public void goAHead() {
+    /*public void goAHead() {
         int x = head.x();
         int y = head.y();
         switch (direction) {
@@ -93,7 +94,7 @@ public class Snake {
                 move(new Point(x, ++y % PlayerMap.LENGTH));
                 break;
         }
-    }
+    }*/
 
     /* 画出蛇 */
     public void draw(Graphics g) {
@@ -121,7 +122,7 @@ public class Snake {
     }
 
     /* 键盘监听: 上下左右 */
-    public void keyPressed(KeyEvent e) {
+    /*public void keyPressed(KeyEvent e) {
         int key = e.getKeyCode();
         int x = head.x();
         int y = head.y();
@@ -152,5 +153,5 @@ public class Snake {
                 }
                 break;
         }
-    }
+    }*/
 }

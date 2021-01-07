@@ -1,18 +1,20 @@
 package com.struct;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 public class UDPSnake implements Serializable {
-    private List<Snake> snakes;
+    private HashMap<String, Snake> snakes;
     private Point food;
 
-    public UDPSnake(List<Snake> snakes, Point food) {
+    public UDPSnake(HashMap<String, Snake> snakes, Point food) {
         this.snakes = snakes;
         this.food = food;
     }
 
-    public List<Snake> getSnakes() {
+
+    public HashMap<String, Snake> getSnakes() {
         return snakes;
     }
 
