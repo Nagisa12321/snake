@@ -1,6 +1,5 @@
 package com.cc;
 
-import com.jtchen.PlayerMap;
 import com.struct.Point;
 import com.struct.Snake;
 import com.struct.UDPSnake;
@@ -70,7 +69,12 @@ public class UDPClient extends Frame implements Runnable {
 
     public void run() {
         DatagramSocket socket = establish(IP, 8088, playerName);
-        if(socket==null) return;
+        if (socket == null) {
+            this.dispose();
+            return;
+        }
+
+        //开启收,发线程,分别有对应的消息队列与此进程沟通
         new Thread(new UDPClientSend(IP, 8090, playerName, socket, keyboardQueue)).start();
         new Thread(new UDPClientReceive(socket, drawQueue)).start();
 
@@ -88,7 +92,7 @@ public class UDPClient extends Frame implements Runnable {
 
 
             //检查蛇是不是si了
-            if (!snakes.containsKey(playerName)){
+            if (!snakes.containsKey(playerName)) {
                 socket.close();
                 this.dispose();
                 return;
@@ -147,14 +151,14 @@ public class UDPClient extends Frame implements Runnable {
 
     public void update(Graphics g) {
         // 若虚拟画布为空, 新建虚拟画布
-        if (iBuffer == null){
+        if (iBuffer == null) {
             iBuffer = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
             gBuffer = iBuffer.getGraphics();
         }
 
         //双缓冲技术，填充内存画板
         gBuffer.setColor(Color.WHITE);
-        gBuffer.fillRect(0,0,LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
+        gBuffer.fillRect(0, 0, LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
 
         //画蛇画食物(在内存画板上)
         draw(gBuffer);
