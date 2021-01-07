@@ -57,13 +57,13 @@ public class PlayerMap extends Frame {
         GenerateFood();
 
         // 添加键盘监听
-        addKeyListener(new KeyMonitor());
-
+        /*addKeyListener(new KeyMonitor());
+*/
         // 先画出当前画面
         repaint();
 
         // 开始push-paint线程
-        new Thread(new DrawThread()).start();
+        /*new Thread(new DrawThread()).start();*/
     }
 
     /* draw every snakes */
@@ -77,11 +77,11 @@ public class PlayerMap extends Frame {
         return body;
     }
 
-    // 让每一条蛇前进一格
+/*    // 让每一条蛇前进一格
     public void pushSnake() {
         for (Snake snake : snakes)
             snake.goAHead();
-    }
+    }*/
 
     // 在地图随机一点生成食物
     public static void GenerateFood() {
@@ -147,7 +147,7 @@ public class PlayerMap extends Frame {
     }
 
 
-    /* 键盘监听器 */
+   /* *//* 键盘监听器 *//*
     private class KeyMonitor extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
@@ -164,7 +164,7 @@ public class PlayerMap extends Frame {
 
     }
 
-    /* 新线程专门负责每隔n毫秒推动蛇一次并且重画 */
+    *//* 新线程专门负责每隔n毫秒推动蛇一次并且重画 *//*
     public class DrawThread implements Runnable {
         @Override
         public void run() {
@@ -178,7 +178,7 @@ public class PlayerMap extends Frame {
                 }
             }
         }
-    }
+    }*/
 
     public static void main(String[] args) {
         Snake snake = new Snake(new Point[]{new Point(1, 0), new Point(1, 1),
