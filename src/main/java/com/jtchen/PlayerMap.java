@@ -1,6 +1,7 @@
-package com.jtchen.model;
+package com.jtchen;
 
-import com.jtchen.struct.Point;
+import com.struct.Point;
+import com.struct.Snake;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
