@@ -75,7 +75,9 @@ public class UDPClient extends Frame implements Runnable {
         addKeyListener(new KeyMonitor());
 
         while (true) {
-            if (drawQueue.isEmpty()) continue;
+            if (drawQueue.isEmpty())
+                continue;
+
             UDPSnake nowDraw = drawQueue.remove(0);
             snakes = nowDraw.getSnakes();
             food = nowDraw.getFood();
@@ -84,6 +86,7 @@ public class UDPClient extends Frame implements Runnable {
             //..
             if (!snakes.containsKey(playerName)){
                 socket.close();
+                this.dispose();
                 return;
             }
 
@@ -144,6 +147,7 @@ public class UDPClient extends Frame implements Runnable {
         if (offScreenImage == null)
             offScreenImage = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
         Graphics graphics = offScreenImage.getGraphics();
+
 
         // 先把内容画在虚拟画布上
         paint(graphics);
