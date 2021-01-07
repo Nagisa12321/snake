@@ -1,6 +1,5 @@
 package com.cc;
 
-import com.jtchen.PlayerMap;
 import com.struct.Point;
 import com.struct.Snake;
 import com.struct.UDPSnake;
@@ -117,10 +116,10 @@ public class UDPClient extends Frame implements Runnable {
             }
 
             // draw head
-            g.setColor(PlayerMap.HEAD_COLOR);
-            g.fillRect(PlayerMap.toFillParameter(snake.getHead()).x()
-                    * PlayerMap.BLOCK, PlayerMap.toFillParameter(snake.getHead()).y()
-                    * PlayerMap.BLOCK, PlayerMap.BLOCK, PlayerMap.BLOCK);
+            g.setColor(HEAD_COLOR);
+            g.fillRect(toFillParameter(snake.getHead()).x()
+                    * BLOCK, toFillParameter(snake.getHead()).y()
+                    * BLOCK, BLOCK, BLOCK);
 
             g.setColor(c);
         }

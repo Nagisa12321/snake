@@ -1,6 +1,5 @@
 package com.struct;
 
-import com.jtchen.PlayerMap;
 import com.struct.Point;
 
 import java.awt.*;
@@ -9,6 +8,8 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
+
+import static com.jtchen.Thread.SendSnakes.LENGTH;
 
 /**
  * @author jtchen
@@ -48,9 +49,6 @@ public class Snake implements Serializable {
             queue.offer(points[i]);
             if (i == points.length - 1) head = points[i];
             if (i == points.length - 2) prev = points[i];
-
-            // 添加入集中
-            PlayerMap.getBody().add(points[i]);
         }
 
         // 上色
@@ -58,6 +56,7 @@ public class Snake implements Serializable {
 
         // 根据最后一个点、 倒数第二个点判定方向
         assert prev != null;
+        assert head != null;
         this.direction = Point.getDirection(prev, head);
 
         head = points[points.length - 1];
@@ -76,7 +75,7 @@ public class Snake implements Serializable {
         body.add(point);
 
         // 如果不是food则会出队
-        if (point != foodPoint) {
+        if (!point.equals(foodPoint)) {
             Point point1 = queue.poll();
             body.remove(point1);
         }
@@ -84,62 +83,27 @@ public class Snake implements Serializable {
     }
 
     /* 让蛇在其方向上前进一格 */
-    /*public void goAHead() {
+    public boolean goAHead(Point foodPoint, Set<Point> body) {
         int x = head.x();
         int y = head.y();
         switch (direction) {
             // 0上 1下 2左 3右
             case 2:
-                move(new Point(x - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--x) : --x, y));
-                break;
+                return move(new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y), foodPoint, body);
             case 0:
-                move(new Point(x, y - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--y) : --y));
-                break;
+                return move(new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y), foodPoint, body);
             case 3:
-                move(new Point(++x % PlayerMap.LENGTH, y));
-                break;
+                return move(new Point(++x % LENGTH, y), foodPoint, body);
             case 1:
-                move(new Point(x, ++y % PlayerMap.LENGTH));
-                break;
+                return move(new Point(x, ++y % LENGTH), foodPoint, body);
         }
-    }*/
+        return true;
+    }
 
 
     public Point getHead() {
         return head;
     }
 
-    /* 键盘监听: 上下左右 */
-    /*public void keyPressed(KeyEvent e) {
-        int key = e.getKeyCode();
-        int x = head.x();
-        int y = head.y();
-        switch (key) {
-            // 0上 1下 2左 3右
-            case KeyEvent.VK_LEFT:
-                if (direction != 3) {
-                    move(new Point(x - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--x) : --x, y));
-                    direction = 2;
-                }
-                break;
-            case KeyEvent.VK_UP:
-                if (direction != 1) {
-                    move(new Point(x, y - 1 < 0 ? PlayerMap.LENGTH - Math.abs(--y) : --y));
-                    direction = 0;
-                }
-                break;
-            case KeyEvent.VK_RIGHT:
-                if (direction != 2) {
-                    move(new Point(++x % PlayerMap.LENGTH, y));
-                    direction = 3;
-                }
-                break;
-            case KeyEvent.VK_DOWN:
-                if (direction != 0) {
-                    move(new Point(x, ++y % PlayerMap.LENGTH));
-                    direction = 1;
-                }
-                break;
-        }
-    }*/
+
 }
