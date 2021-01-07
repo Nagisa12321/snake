@@ -16,7 +16,7 @@ public class GetOperation implements Runnable{
     }
 
     public void run() {
-        // ä¸æ–­ç­‰å¾…æ¥æ”¶é“¾æ¥
+        // ²»¶ÏµÈ´ı½ÓÊÕÁ´½Ó
         while (true) {
             try (DatagramSocket socket = new DatagramSocket(PORT)) {
 
@@ -24,10 +24,10 @@ public class GetOperation implements Runnable{
                 DatagramPacket packet = new DatagramPacket(buff, 4096);
                 socket.receive(packet);
 
-                // æ”¶åˆ°çš„æ˜¯String æ˜¯æ“ä½œå’Œnameç»„åˆ,
+                // ÊÕµ½µÄÊÇString ÊÇ²Ù×÷ºÍname×éºÏ,
                 String opStr = new String(buff);
 
-                // åŠ å…¥é˜Ÿåˆ—ä¸­, è®©SendSnakesè§£ææ“ä½œå¹¶ä¸”å¤„ç†
+                // ¼ÓÈë¶ÓÁĞÖĞ, ÈÃSendSnakes½âÎö²Ù×÷²¢ÇÒ´¦Àí
                 operation.add(opStr);
             } catch (IOException e) {
                 System.err.println(e.getMessage() + "(GetOperation)");

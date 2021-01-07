@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/ClientInfo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/PlayerMap.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/Thread/GetOperation.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/Thread/SendSnakes.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/Thread/UDPServerMain.java" charset="GBK" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>
