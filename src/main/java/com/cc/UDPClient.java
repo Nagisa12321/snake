@@ -40,7 +40,9 @@ public class UDPClient extends Frame implements Runnable {
 
     private final Vector<UDPSnake> drawQueue;
 
-    private Image offScreenImage = null;
+    private Image iBuffer = null;
+
+    private Graphics gBuffer = null;
 
     private HashMap<String, Snake> snakes;
 
@@ -79,6 +81,7 @@ public class UDPClient extends Frame implements Runnable {
             if (drawQueue.isEmpty())
                 continue;
 
+
             UDPSnake nowDraw = drawQueue.remove(0);
             snakes = nowDraw.getSnakes();
             food = nowDraw.getFood();
@@ -90,10 +93,7 @@ public class UDPClient extends Frame implements Runnable {
                 this.dispose();
                 return;
             }
-
-
             repaint();
-            System.err.println("repaint");
         }
     }
 
@@ -145,19 +145,20 @@ public class UDPClient extends Frame implements Runnable {
 
     public void update(Graphics g) {
         // 若虚拟画布为空, 新建虚拟画布
-        if (offScreenImage == null)
-            offScreenImage = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
-        Graphics graphics = offScreenImage.getGraphics();
+        if (iBuffer == null){
+            iBuffer = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
+            gBuffer = iBuffer.getGraphics();
+        }
 
+        //双缓冲技术，填充内存画板
+        gBuffer.setColor(Color.WHITE);
+        gBuffer.fillRect(0,0,LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
+        draw(gBuffer);
+        paint(gBuffer);
 
-        // 先把内容画在虚拟画布上
-        paint(graphics);
+        //内存画板直接画前台
+        g.drawImage(iBuffer, 0, 0, null);
 
-        //然后将虚拟画布上的内容一起画在画布上
-        g.drawImage(offScreenImage, 0, 0, null);
-
-        //draw snakes and food
-        draw(g);
     }
 
     /**
