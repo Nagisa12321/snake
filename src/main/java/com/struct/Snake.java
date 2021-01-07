@@ -22,6 +22,14 @@ public class Snake {
 
     private int direction; // 0上 1下 2左 3右
 
+    public int getDirection() {
+        return direction;
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
+    }
+
     public Snake(Point[] points, Color color) {
         // 初始化蛇队列, 并且把点入队
         queue = new LinkedList<>();
