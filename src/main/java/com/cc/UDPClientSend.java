@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class UDPClientSend implements Runnable {
-    private InetAddress serverIP;
-    private int serverPort;
-    private String playerName;
-    private DatagramSocket socket;
-    private Vector<Integer> keyboardQueue;
+    private final InetAddress serverIP;
+    private final int serverPort;
+    private final String playerName;
+    private final DatagramSocket socket;
+    private final Vector<Integer> keyboardQueue;
     private final HashMap<Integer, String> EventMap = new HashMap<>() {{
         put(KeyEvent.VK_UP, "up");
         put(KeyEvent.VK_DOWN, "down");

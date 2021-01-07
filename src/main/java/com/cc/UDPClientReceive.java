@@ -12,8 +12,8 @@ import java.net.DatagramSocket;
 import java.util.Vector;
 
 public class UDPClientReceive implements Runnable {
-    private DatagramSocket socket;
-    private Vector<UDPSnake> ObjQueue;
+    private final DatagramSocket socket;
+    private final Vector<UDPSnake> ObjQueue;
 
     public UDPClientReceive(DatagramSocket socket,Vector<UDPSnake> ObjQueue) {
         this.socket = socket;
