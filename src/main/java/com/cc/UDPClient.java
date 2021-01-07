@@ -76,7 +76,9 @@ public class UDPClient extends Frame implements Runnable {
         addKeyListener(new KeyMonitor());
 
         while (true) {
-            if (drawQueue.isEmpty()) continue;
+            if (drawQueue.isEmpty())
+                continue;
+
             UDPSnake nowDraw = drawQueue.remove(0);
             snakes = nowDraw.getSnakes();
             food = nowDraw.getFood();
@@ -85,6 +87,7 @@ public class UDPClient extends Frame implements Runnable {
             //..
             if (!snakes.containsKey(playerName)){
                 socket.close();
+                this.dispose();
                 return;
             }
 
@@ -117,10 +120,10 @@ public class UDPClient extends Frame implements Runnable {
             }
 
             // draw head
-            g.setColor(PlayerMap.HEAD_COLOR);
-            g.fillRect(PlayerMap.toFillParameter(snake.getHead()).x()
-                    * PlayerMap.BLOCK, PlayerMap.toFillParameter(snake.getHead()).y()
-                    * PlayerMap.BLOCK, PlayerMap.BLOCK, PlayerMap.BLOCK);
+            g.setColor(HEAD_COLOR);
+            g.fillRect(toFillParameter(snake.getHead()).x()
+                    * BLOCK, toFillParameter(snake.getHead()).y()
+                    * BLOCK, BLOCK, BLOCK);
 
             g.setColor(c);
         }
@@ -145,6 +148,7 @@ public class UDPClient extends Frame implements Runnable {
         if (offScreenImage == null)
             offScreenImage = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
         Graphics graphics = offScreenImage.getGraphics();
+
 
         // 先把内容画在虚拟画布上
         paint(graphics);
