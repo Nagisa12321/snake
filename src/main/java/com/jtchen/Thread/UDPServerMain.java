@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.Vector;
 
 @SuppressWarnings("InfiniteLoopStatement")
-public class UDPServerMain {
+public class UDPServerMain implements Runnable{
     public static final int PORT = 8088;
 
     public static Color randomColor() {
@@ -27,7 +27,8 @@ public class UDPServerMain {
         return colors[x];
     }
 
-    public static void main(String[] args) {
+    @Override
+    public void run() {
         System.out.println("已开启服务器main函数!");
 
         // main和GetOperation维护的玩家列表

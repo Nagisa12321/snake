@@ -1,8 +1,12 @@
 package com.app;
 
+import com.jtchen.Thread.UDPServerMain;
+
 import com.cc.UDPClient;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
@@ -18,6 +22,16 @@ public class SnakeGUI {
     private JButton HOSTAGAMEButton;
     private JTextField textField1;
     private JTextField textField2;
+
+    public SnakeGUI() {
+        HOSTAGAMEButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                HOSTAGAMEButton.setEnabled(false);
+                new Thread(new UDPServerMain()).start();
+            }
+        });
+    }
 
     public SnakeGUI() {
         JOINAGAMEButton.addActionListener(new ActionListener() {
