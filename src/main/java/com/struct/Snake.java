@@ -1,10 +1,12 @@
-package com.jtchen.model;
+package com.struct;
 
-import com.jtchen.struct.MyQueue;
-import com.jtchen.struct.Point;
+import com.jtchen.PlayerMap;
+import com.struct.Point;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * @author jtchen
@@ -12,7 +14,7 @@ import java.awt.event.KeyEvent;
  * @date 2020/12/30 15:38
  */
 public class Snake {
-    private final MyQueue<Point> queue; // 由点组成的队列
+    private final Queue<Point> queue; // 由点组成的队列
 
     private Point head; // 蛇的头的点
 
@@ -22,10 +24,10 @@ public class Snake {
 
     public Snake(Point[] points, Color color) {
         // 初始化蛇队列, 并且把点入队
-        queue = new MyQueue<>();
+        queue = new LinkedList<>();
         Point prev = null;
         for (int i = 0; i < points.length; i++) {
-            queue.enqueue(points[i]);
+            queue.offer(points[i]);
             if (i == points.length - 1) head = points[i];
             if (i == points.length - 2) prev = points[i];
 
@@ -52,12 +54,12 @@ public class Snake {
 
         // 否则更新头部, 更新queue、set
         head = point;
-        queue.enqueue(point);
+        queue.offer(point);
         PlayerMap.getBody().add(point);
 
         // 如果不是food则会出队
         if (!PlayerMap.isFood(point)) {
-            Point point1 = queue.dequeue();
+            Point point1 = queue.poll();
             PlayerMap.getBody().remove(point1);
 
             // 如果是food则再随机生成一个

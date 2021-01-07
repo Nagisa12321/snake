@@ -1,4 +1,4 @@
-package com.jtchen.struct;
+package com.struct;
 
 import java.util.Objects;
 
