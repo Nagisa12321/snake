@@ -355,6 +355,8 @@ public class UDPClient extends Frame implements Runnable {
                         keyboardQueue.put(KeyEvent.VK_LEFT);
                         Thread.sleep(5);
                     }
+                }else if(e.getKeyCode()==KeyEvent.VK_V){
+                    keyboardQueue.put(-1);
                 }
             } catch (InterruptedException interruptedException) {
                 System.err.println(interruptedException.getMessage());

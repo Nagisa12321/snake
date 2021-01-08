@@ -16,6 +16,7 @@ public class UDPClientSend implements Runnable {
     private final String playerName;
     private final DatagramSocket socket;
     private final BlockingQueue<Integer> keyboardQueue;
+    private  boolean superMode = false;
     private final HashMap<Integer, String> EventMap = new HashMap<>() {{
         put(KeyEvent.VK_UP, "up");
         put(KeyEvent.VK_DOWN, "down");
@@ -35,14 +36,25 @@ public class UDPClientSend implements Runnable {
     public void run() {
         try {
             while (true) {
-
+                int op = keyboardQueue.take();
+                if(op==-1){
+                    superMode=!superMode;
+                    continue;
+                }
                 //拼接消息串
-                String msg = playerName + " " + EventMap.get(keyboardQueue.take());
+                String msg = playerName + " " + EventMap.get(op);
                 byte[] msgBody = msg.getBytes(StandardCharsets.UTF_8);
 
                 //发送给服务器
                 DatagramPacket msgPacket = new DatagramPacket(msgBody, msgBody.length, serverIP, serverPort);
                 socket.send(msgPacket);
+                if(superMode){
+                    System.out.println("superMode!");
+                    for(int i = 0;i<7;++i){
+                        Thread.sleep(4);
+                        socket.send(msgPacket);
+                    }
+                }
             }
         }catch (IOException |InterruptedException e){
             System.err.println(e.getMessage());
