@@ -24,7 +24,7 @@ public class UDPServerMain implements Runnable {
                 Color.pink
         };
 
-        int x = (int) (Math.random() * 100) / colors.length;
+        int x = (int) (Math.random() * 100) % colors.length;
         return colors[x];
     }
 
@@ -71,7 +71,7 @@ public class UDPServerMain implements Runnable {
                 Point p2 = new Point(1, 1);
                 Point p3 = new Point(1, 2);
 
-                Snake snake = new Snake(new Point[]{p1, p2, p3}, Color.pink);
+                Snake snake = new Snake(new Point[]{p1, p2, p3}, randomColor());
 
                 // 加入点集
                 body.add(p1);

@@ -264,7 +264,7 @@ public class SendSnakes implements Runnable {
                 }
                 try {
                     SendUDPSnakes();
-                    Thread.sleep(20);
+                    Thread.sleep(120);
                 } catch (InterruptedException | IOException e) {
                     System.out.println(e.getMessage());
                 }

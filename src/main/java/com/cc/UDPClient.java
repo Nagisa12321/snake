@@ -83,7 +83,7 @@ public class UDPClient extends Frame implements Runnable {
 
         while (true) {
             if (drawQueue.isEmpty()){
-                repaint();
+//                repaint();
                 continue;
             }
 
