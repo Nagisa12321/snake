@@ -25,7 +25,7 @@ public class UDPClientReceive implements Runnable {
         try {
             while (true) {
                 //接收对象,用byteStream反序列化
-                byte[] buff = new byte[4096];
+                byte[] buff = new byte[65535];
                 DatagramPacket packet = new DatagramPacket(buff, buff.length);
                 socket.receive(packet);
                 ByteArrayInputStream bs = new ByteArrayInputStream(buff);

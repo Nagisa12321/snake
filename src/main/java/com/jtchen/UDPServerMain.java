@@ -10,12 +10,15 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 
 @SuppressWarnings("InfiniteLoopStatement")
 public class UDPServerMain implements Runnable {
     public static final int PORT = 8088;
+    private Semaphore mutex = new Semaphore(1);
 
     public static Color randomColor() {
 
@@ -31,7 +34,7 @@ public class UDPServerMain implements Runnable {
         System.out.println("已开启服务器main函数!");
 
         // main和GetOperation维护的玩家列表
-        BlockingQueue<ClientInfo> clientInfos = new LinkedBlockingQueue<>();
+        Vector<ClientInfo> clientInfos = new Vector<>();
 
         // SendSnakes和GetOperation维护的操作队列
         BlockingQueue<String> operation = new LinkedBlockingQueue<>();
@@ -44,7 +47,12 @@ public class UDPServerMain implements Runnable {
         HashSet<Point> body = new HashSet<>();
 
         // 开启收线程
-        new Thread(new SendSnakes(clientInfos, operation, snakes, body)).start();
+        new Thread(new SendSnakes(
+                clientInfos,
+                operation,
+                snakes,
+                body,
+                mutex)).start();
         new Thread(new GetOperation(operation)).start();
 
         while (true) {
@@ -57,7 +65,9 @@ public class UDPServerMain implements Runnable {
                 InetAddress clientIP = packet.getAddress();
 
                 // 新增玩家
+                /*mutex.acquire();*/
                 clientInfos.add(new ClientInfo(clientPort, clientIP));
+                /*mutex.release();*/
 
                 // 新增蛇
                 String name = new String(packet.getData(),
@@ -89,7 +99,7 @@ public class UDPServerMain implements Runnable {
 
                 // 发送链接成功的消息
                 socket.send(new DatagramPacket(new byte[1], 1, clientIP, clientPort));
-            } catch (IOException e) {
+            } catch (IOException /*| InterruptedException*/ e) {
                 System.err.println(e.getMessage());
             }
         }

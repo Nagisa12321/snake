@@ -8,7 +8,7 @@ import java.util.Objects;
  * @version 1.0
  * @date 2020/12/30 16:15
  */
-public class Point implements Serializable {
+public class Point implements Serializable, Cloneable {
     public void setX(int x) {
         this.x = x;
     }
@@ -44,6 +44,13 @@ public class Point implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(x, y);
+    }
+
+    public Point clone() throws CloneNotSupportedException {
+        Point clone = (Point) super.clone();
+        clone.x = x;
+        clone.y = y;
+        return clone;
     }
 
     /* pointB 在 pointA 的什么方向 */

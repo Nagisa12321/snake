@@ -9,12 +9,16 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 @SuppressWarnings("InfiniteLoopStatement")
 public class SendSnakes implements Runnable {
+
     public static final int LENGTH = 40; // 真实长宽
 
-    private final BlockingQueue<ClientInfo> clientInfos; // 用户IP PORT列表
+    private Semaphore mutex; // 用户列表互斥锁
+
+    private final Vector<ClientInfo> clientInfos; // 用户IP PORT列表
 
     private final BlockingQueue<String> operation; // 操作队列
 
@@ -24,14 +28,16 @@ public class SendSnakes implements Runnable {
 
     private final HashSet<Point> body; // 身体点集
 
-    public SendSnakes(BlockingQueue<ClientInfo> clientInfos,
+    public SendSnakes(Vector<ClientInfo> clientInfos,
                       BlockingQueue<String> operation,
                       HashMap<String, Snake> snakes,
-                      HashSet<Point> body) {
+                      HashSet<Point> body,
+                      Semaphore mutex) {
         this.clientInfos = clientInfos;
         this.operation = operation;
         this.snakes = snakes;
         this.body = body;
+        this.mutex = mutex;
         foodPoints = new HashSet<>();
 
         // 地图随机生成食物
@@ -39,7 +45,7 @@ public class SendSnakes implements Runnable {
         Point foodPoint2 = new Point(20, 20);
         foodPoints.add(foodPoint1);
         foodPoints.add(foodPoint2);
-        new Thread(new PushSnakeThread(snakes, foodPoints, body, clientInfos)).start();
+        new Thread(new PushSnakeThread(snakes, foodPoints, body, clientInfos, mutex)).start();
     }
 
 
@@ -57,6 +63,8 @@ public class SendSnakes implements Runnable {
                 // 由name得到蛇
                 Snake snake = snakes.get(name);
 
+                if (snake == null) continue;
+
                 System.out.println("snake : " + snake);
 
                 // 由operation 和 具体snake操作蛇
@@ -66,7 +74,7 @@ public class SendSnakes implements Runnable {
                     int idx = 0;
                     // 删除身体上的点
                     for (var point : snake.getQueue()) {
-                        if (idx++ % 2 == 0)
+                        /*if (idx++ % 2 == 0)*/
                             foodPoints.add(point);
                         body.remove(point);
                     }
@@ -78,7 +86,7 @@ public class SendSnakes implements Runnable {
                 // 遍历玩家列表 发送UDPSnakes给玩家们
                 SendUDPSnakes();
 
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException | IOException | CloneNotSupportedException e) {
                 System.err.println(e.getMessage());
             }
         }
@@ -175,28 +183,44 @@ public class SendSnakes implements Runnable {
     }
 
     /* 向每个玩家发送UDPSnakes */
-    public void SendUDPSnakes() throws IOException {
+    public void SendUDPSnakes() throws IOException, CloneNotSupportedException {
+        /*mutex.acquire();*/
         sendUDPSnake(snakes, foodPoints, clientInfos);
+        /*mutex.release();*/
     }
 
     /* 公用方法sendUDPSnake */
-    private static void sendUDPSnake(HashMap<String, Snake> snakes, HashSet<Point> foodPoints, BlockingQueue<ClientInfo> clientInfos) throws IOException {
+    private static void sendUDPSnake(HashMap<String, Snake> snakes,
+                                     HashSet<Point> foodPoints,
+                                     Vector<ClientInfo> clientInfos) throws IOException, CloneNotSupportedException {
         UDPSnake snake = new UDPSnake(snakes, foodPoints);
+
+        // 克隆snakes
+        HashMap<String, Snake> tmpSnakes = new HashMap<>();
+        for (var entry : snakes.entrySet())
+            tmpSnakes.put(entry.getKey(), entry.getValue().clone());
+
+        // 克隆food
+        HashSet<Point> tmpFoods = new HashSet<>();
+        for (var food : foodPoints)
+            tmpFoods.add(food.clone());
+
 
         for (var c : clientInfos) {
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket(new byte[4096], 4096, c.getIP(), c.getPORT());
+            DatagramPacket packet = new DatagramPacket(new byte[65535], 65535, c.getIP(), c.getPORT());
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
             // 转为Object流
             ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-            objectStream.writeObject(snake);
+            objectStream.writeObject(new UDPSnake(tmpSnakes, tmpFoods));
             byte[] arr = byteArrayStream.toByteArray();
             packet.setData(arr);//填充DatagramPacket
             socket.send(packet);//发送
             objectStream.close();
             byteArrayStream.close();
         }
+
     }
 
     /* 公用方法generateFood */
@@ -228,16 +252,19 @@ public class SendSnakes implements Runnable {
         private final HashMap<String, Snake> snakes;
         private final HashSet<Point> foodPoints;
         private final HashSet<Point> body;
-        private final BlockingQueue<ClientInfo> clientInfos;
+        private final Vector<ClientInfo> clientInfos;
+        private final Semaphore mutex;
 
         public PushSnakeThread(HashMap<String, Snake> snakes,
                                HashSet<Point> foodPoints,
                                HashSet<Point> body,
-                               BlockingQueue<ClientInfo> clientInfos) {
+                               Vector<ClientInfo> clientInfos,
+                               Semaphore mutex) {
             this.snakes = snakes;
             this.foodPoints = foodPoints;
             this.body = body;
             this.clientInfos = clientInfos;
+            this.mutex = mutex;
         }
 
 
@@ -294,7 +321,7 @@ public class SendSnakes implements Runnable {
                         int idx = 0;
                         // 删除身体上的点
                         for (var point : snake.getQueue()) {
-                            if (idx++ % 2 == 0)
+                            /*if (idx++ % 2 == 0)*/
                                 foodPoints.add(point);
                             body.remove(point);
 
@@ -309,15 +336,17 @@ public class SendSnakes implements Runnable {
                 try {
                     SendUDPSnakes();
                     Thread.sleep(200);
-                } catch (InterruptedException | IOException e) {
+                } catch (InterruptedException | IOException | CloneNotSupportedException e) {
                     System.out.println(e.getMessage());
                 }
             }
         }
 
         /* 向每个玩家发送UDPSnakes */
-        public void SendUDPSnakes() throws IOException {
+        public void SendUDPSnakes() throws IOException, CloneNotSupportedException{
+            /*mutex.acquire();*/
             sendUDPSnake(snakes, foodPoints, clientInfos);
+            /*mutex.release();*/
         }
 
         // 在地图随机一点生成食物

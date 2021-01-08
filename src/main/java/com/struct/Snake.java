@@ -6,15 +6,14 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import static com.jtchen.SendSnakes.LENGTH;
 
 /**
  * @author jtchen
  * @version 1.0
  * @date 2020/12/30 15:38
  */
-public class Snake implements Serializable {
-    private final Queue<Point> queue; // 由点组成的队列
+public class Snake implements Serializable, Cloneable {
+    private Queue<Point> queue; // 由点组成的队列
 
     private Point head; // 蛇的头的点
 
@@ -26,7 +25,7 @@ public class Snake implements Serializable {
         return color;
     }
 
-    private final Color color; // 蛇的颜色
+    private Color color; // 蛇的颜色
 
     private Direction direction; // 0上 1下 2左 3右
 
@@ -79,28 +78,16 @@ public class Snake implements Serializable {
         return true;
     }
 
-    /* 让蛇在其方向上前进一格 */
-    /*public boolean goAHead(Point foodPoint, Set<Point> body) {
-        int x = head.x();
-        int y = head.y();
-        switch (direction) {
-            // 0上 1下 2左 3右
-            case LEFT:
-                return move(new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y), foodPoint, body);
-            case UP:
-                return move(new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y), foodPoint, body);
-            case RIGHT:
-                return move(new Point(++x % LENGTH, y), foodPoint, body);
-            case DOWN:
-                return move(new Point(x, ++y % LENGTH), foodPoint, body);
-        }
-        return true;
-    }*/
-
-
     public Point getHead() {
         return head;
     }
 
-
+    public Snake clone() throws CloneNotSupportedException {
+        Snake clone = (Snake) super.clone();
+        clone.head = head.clone();
+        clone.queue = new LinkedList<>(queue);
+        clone.color = color;
+        clone.direction = direction;
+        return clone;
+    }
 }
