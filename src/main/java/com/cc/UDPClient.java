@@ -17,6 +17,9 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class UDPClient extends Frame implements Runnable {
     public static final Color HEAD_COLOR = Color.red; // 蛇头部颜色
@@ -35,9 +38,9 @@ public class UDPClient extends Frame implements Runnable {
 
     InetAddress IP;
 
-    private final Vector<Integer> keyboardQueue;
+    private final BlockingQueue<Integer> keyboardQueue;
 
-    private final Vector<UDPSnake> drawQueue;
+    private final BlockingQueue<UDPSnake> drawQueue;
 
     private Image iBuffer = null;
 
@@ -50,8 +53,8 @@ public class UDPClient extends Frame implements Runnable {
     public UDPClient(String playerName, String host) throws HeadlessException, UnknownHostException {
         this.playerName = playerName;
         IP = InetAddress.getByName(host);
-        keyboardQueue = new Vector<>();
-        drawQueue = new Vector<>();
+        keyboardQueue = new LinkedBlockingQueue<>();
+        drawQueue = new LinkedBlockingQueue<>();
 
         this.setTitle("Snake");
         this.setSize(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
@@ -79,27 +82,28 @@ public class UDPClient extends Frame implements Runnable {
         new Thread(new UDPClientReceive(socket, drawQueue)).start();
 
         //线程开始后才加键盘监听
-        addKeyListener(new KeyMonitor());
+        addKeyListener(new KeyMonitor(this));
 
         while (true) {
-            if (drawQueue.isEmpty())
-                continue;
-
-            //消息队列取出snakes表
-            UDPSnake nowDraw = drawQueue.remove(0);
-            snakes = nowDraw.getSnakes();
-            food = nowDraw.getFood();
+            try {
+                //消息队列取出snakes表
+                UDPSnake nowDraw = drawQueue.take();
+                snakes = nowDraw.getSnakes();
+                food = nowDraw.getFood();
 
 
-            //检查蛇是不是si了
-            if (!snakes.containsKey(playerName)) {
-                socket.close();
-                this.dispose();
-                return;
+                //检查蛇是不是si了
+                if (!snakes.containsKey(playerName)) {
+                    socket.close();
+                    this.dispose();
+                    return;
+                }
+
+                //每次都收到消息重画画板
+                repaint();
+            } catch (InterruptedException e) {
+                System.err.println(e.getMessage());
             }
-
-            //每次都收到消息重画画板
-            repaint();
         }
     }
 
@@ -199,17 +203,24 @@ public class UDPClient extends Frame implements Runnable {
 
 
     private class KeyMonitor extends KeyAdapter {
+        private UDPClient window;
+        public KeyMonitor(UDPClient window){
+            this.window = window;
+        }
         @Override
         public void keyPressed(KeyEvent e) {
-            // ESC退出
+            // ESC关闭窗口
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                System.exit(0);
+                window.dispose();
 
                 //如果是上下左右,加入消息队列给UDPClientSend
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
                     e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-
-                keyboardQueue.add(e.getKeyCode());
+                try {
+                    keyboardQueue.put(e.getKeyCode());
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
             }
         }
     }
