@@ -22,9 +22,9 @@ public class UDPServerMain implements Runnable {
 
     public static Color randomColor() {
 
-        float x = (float) (Math.random() * 255);
-        float y = (float) (Math.random() * 255);
-        float z = (float) (Math.random() * 255);
+        float x = (float) (Math.random() * 155) + 100;
+        float y = (float) (Math.random() * 155) + 100;
+        float z = (float) (Math.random() * 155) + 100;
 
         return Color.getHSBColor(x, y, z);
     }

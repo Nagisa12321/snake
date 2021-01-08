@@ -74,14 +74,15 @@ public class SendSnakes implements Runnable {
                     int idx = 0;
                     // 删除身体上的点
                     for (var point : snake.getQueue()) {
-                        /*if (idx++ % 2 == 0)*/
-                            foodPoints.add(point);
+                        if (idx++ % 2 == 0)
+                        foodPoints.add(point);
                         body.remove(point);
                     }
 
                     snakes.remove(name);
                     System.out.println("玩家 " + name + "死掉了, 已经从表中移除");
                 }
+                mutex.release();
 
                 // 遍历玩家列表 发送UDPSnakes给玩家们
                 SendUDPSnakes();
@@ -104,13 +105,14 @@ public class SendSnakes implements Runnable {
     }
 
     /* 根据出队的操作移动某条蛇, 并且改变蛇的方向 */
-    public boolean moveSnake(String operation, Snake snake) {
+    public boolean moveSnake(String operation, Snake snake) throws InterruptedException {
         Direction direction = snake.getDirection();
 
         int x = snake.getHead().x();
         int y = snake.getHead().y();
 
         // 判断是否方向改变 并且重新改变方向
+        mutex.acquire();
         switch (operation) {
             // 0上 1下 2左 3右
             case "left":
@@ -171,6 +173,7 @@ public class SendSnakes implements Runnable {
                 }
                 break;
         }
+
         // 如果什么都没发生则返回true
         // 比如说蛇的方向是向前, 你按了后, 则什么也没发生
         // 换句话说 蛇不死的话返回true
@@ -183,19 +186,18 @@ public class SendSnakes implements Runnable {
     }
 
     /* 向每个玩家发送UDPSnakes */
-    public void SendUDPSnakes() throws IOException, CloneNotSupportedException {
-        /*mutex.acquire();*/
-        sendUDPSnake(snakes, foodPoints, clientInfos);
-        /*mutex.release();*/
+    public void SendUDPSnakes() throws IOException, CloneNotSupportedException, InterruptedException {
+        sendUDPSnake(snakes, foodPoints, clientInfos, mutex);
     }
 
     /* 公用方法sendUDPSnake */
     private static void sendUDPSnake(HashMap<String, Snake> snakes,
                                      HashSet<Point> foodPoints,
-                                     Vector<ClientInfo> clientInfos) throws IOException, CloneNotSupportedException {
-        UDPSnake snake = new UDPSnake(snakes, foodPoints);
+                                     Vector<ClientInfo> clientInfos,
+                                     Semaphore mutex) throws IOException, InterruptedException {
+        UDPSnake UDPsnake = new UDPSnake(snakes, foodPoints);
 
-        // 克隆snakes
+        /*// 克隆snakes
         HashMap<String, Snake> tmpSnakes = new HashMap<>();
         for (var entry : snakes.entrySet())
             tmpSnakes.put(entry.getKey(), entry.getValue().clone());
@@ -203,17 +205,26 @@ public class SendSnakes implements Runnable {
         // 克隆food
         HashSet<Point> tmpFoods = new HashSet<>();
         for (var food : foodPoints)
-            tmpFoods.add(food.clone());
+            tmpFoods.add(food.clone());*/
 
 
-        for (var c : clientInfos) {
+        for (int i = 0; i < clientInfos.size(); i++) {
             DatagramSocket socket = new DatagramSocket();
-            DatagramPacket packet = new DatagramPacket(new byte[65535], 65535, c.getIP(), c.getPORT());
+            DatagramPacket packet = new DatagramPacket(
+                    new byte[65535],
+                    65535,
+                    clientInfos.get(i).getIP(),
+                    clientInfos.get(i).getPORT());
             ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
             // 转为Object流
             ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-            objectStream.writeObject(new UDPSnake(tmpSnakes, tmpFoods));
+
+            // 锁同步
+            mutex.acquire();
+            objectStream.writeObject(UDPsnake);
+            mutex.release();
+
             byte[] arr = byteArrayStream.toByteArray();
             packet.setData(arr);//填充DatagramPacket
             socket.send(packet);//发送
@@ -274,66 +285,75 @@ public class SendSnakes implements Runnable {
                 // push snakes
 
                 List<String> diePlayer = new ArrayList<>(100);
-                for (var entry : snakes.entrySet()) {
-                    Snake snake = entry.getValue();
+                try {
+                    mutex.acquire();
+                    for (var entry : snakes.entrySet()) {
+                        Snake snake = entry.getValue();
 
-                    int x = snake.getHead().x();
-                    int y = snake.getHead().y();
-                    Direction direction = snake.getDirection();
-                    boolean success = false;
-                    Point movePoint;
-                    switch (direction) {
-                        // 0上 1下 2左 3右
-                        case LEFT:
-                            movePoint = new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y);
-                            success = snake.move(movePoint, foodPoints, body);
-                            if (foodPoints.contains(movePoint)) {
-                                GenerateFood();
-                                foodPoints.remove(movePoint);
-                            }
-                            break;
-                        case UP:
-                            movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
-                            success = snake.move(movePoint, foodPoints, body);
-                            if (foodPoints.contains(movePoint)) {
-                                GenerateFood();
-                                foodPoints.remove(movePoint);
-                            }
-                            break;
-                        case RIGHT:
-                            movePoint = new Point(++x % LENGTH, y);
-                            success = snake.move(movePoint, foodPoints, body);
-                            if (foodPoints.contains(movePoint)) {
-                                GenerateFood();
-                                foodPoints.remove(movePoint);
-                            }
-                            break;
-                        case DOWN:
-                            movePoint = new Point(x, ++y % LENGTH);
-                            success = snake.move(movePoint, foodPoints, body);
-                            if (foodPoints.contains(movePoint)) {
-                                GenerateFood();
-                                foodPoints.remove(movePoint);
-                            }
-                            break;
-                    }
-                    if (!success) {
-                        int idx = 0;
-                        // 删除身体上的点
-                        for (var point : snake.getQueue()) {
-                            /*if (idx++ % 2 == 0)*/
+                        int x = snake.getHead().x();
+                        int y = snake.getHead().y();
+                        Direction direction = snake.getDirection();
+                        boolean success = false;
+                        Point movePoint;
+
+                        switch (direction) {
+                            // 0上 1下 2左 3右
+                            case LEFT:
+                                movePoint = new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y);
+                                success = snake.move(movePoint, foodPoints, body);
+                                if (foodPoints.contains(movePoint)) {
+                                    GenerateFood();
+                                    foodPoints.remove(movePoint);
+                                }
+                                break;
+                            case UP:
+                                movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
+                                success = snake.move(movePoint, foodPoints, body);
+                                if (foodPoints.contains(movePoint)) {
+                                    GenerateFood();
+                                    foodPoints.remove(movePoint);
+                                }
+                                break;
+                            case RIGHT:
+                                movePoint = new Point(++x % LENGTH, y);
+                                success = snake.move(movePoint, foodPoints, body);
+                                if (foodPoints.contains(movePoint)) {
+                                    GenerateFood();
+                                    foodPoints.remove(movePoint);
+                                }
+                                break;
+                            case DOWN:
+                                movePoint = new Point(x, ++y % LENGTH);
+                                success = snake.move(movePoint, foodPoints, body);
+                                if (foodPoints.contains(movePoint)) {
+                                    GenerateFood();
+                                    foodPoints.remove(movePoint);
+                                }
+                                break;
+                        }
+
+
+                        if (!success) {
+                            int idx = 0;
+                            // 删除身体上的点
+                            for (var point : snake.getQueue()) {
+                                if (idx++ % 2 == 0)
                                 foodPoints.add(point);
-                            body.remove(point);
+                                body.remove(point);
 
-                            body.remove(point);
-                            diePlayer.add(entry.getKey());
+                                body.remove(point);
+                                diePlayer.add(entry.getKey());
+                            }
                         }
                     }
+                } catch (InterruptedException e) {
+                    System.err.println(e.getMessage());
                 }
                 for (var name : diePlayer) {
                     snakes.remove(name);
                 }
                 try {
+                    mutex.release();
                     SendUDPSnakes();
                     Thread.sleep(200);
                 } catch (InterruptedException | IOException | CloneNotSupportedException e) {
@@ -343,14 +363,12 @@ public class SendSnakes implements Runnable {
         }
 
         /* 向每个玩家发送UDPSnakes */
-        public void SendUDPSnakes() throws IOException, CloneNotSupportedException{
-            /*mutex.acquire();*/
-            sendUDPSnake(snakes, foodPoints, clientInfos);
-            /*mutex.release();*/
+        public void SendUDPSnakes() throws IOException, CloneNotSupportedException, InterruptedException {
+            sendUDPSnake(snakes, foodPoints, clientInfos, mutex);
         }
 
         // 在地图随机一点生成食物
-        public void GenerateFood() {
+        public void GenerateFood() throws InterruptedException {
             generateFood(body, foodPoints);
         }
     }

@@ -7,6 +7,7 @@ import com.struct.Snake;
 import com.struct.UDPSnake;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -30,7 +31,7 @@ public class UDPClient extends Frame implements Runnable {
 
     public static final Color FOOD_COLOR = Color.yellow; // 食物颜色
 
-    public static final int BLOCK = 15; // 方格长宽
+    public static final int BLOCK = 18; // 方格长宽
 
     public static final int LENGTH = SendSnakes.LENGTH; // 真实长宽
 
@@ -46,6 +47,8 @@ public class UDPClient extends Frame implements Runnable {
 
     private final BlockingQueue<UDPSnake> drawQueue;
 
+    private final DefaultTableModel tableModel;
+
     private Image iBuffer = null;
 
     private Graphics gBuffer = null;
@@ -54,16 +57,17 @@ public class UDPClient extends Frame implements Runnable {
 
     private HashSet<Point> foodPoints;
 
-    public UDPClient(String playerName, String host) throws HeadlessException, UnknownHostException {
+    public UDPClient(String playerName, String host, DefaultTableModel tableModel) throws HeadlessException, UnknownHostException {
         this.playerName = playerName;
         IP = InetAddress.getByName(host);
         keyboardQueue = new LinkedBlockingQueue<>();
         drawQueue = new LinkedBlockingQueue<>();
+        this.tableModel = tableModel;
 
         this.setTitle("Snake");
         this.setSize(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
         this.setLocation(30, 40);
-        this.setBackground(Color.WHITE);
+        this.setBackground(Color.gray);
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -120,7 +124,11 @@ public class UDPClient extends Frame implements Runnable {
 
     /* draw every snakes */
     public void drawSnakes(Graphics g) {
+        tableModel.setRowCount(0);
         for (var entry : snakes.entrySet()) {
+            tableModel.addRow(new String[]{
+                    entry.getKey(),
+                    String.valueOf(entry.getValue().getQueue().size() - 4)});
             Snake snake = entry.getValue();
             System.err.println("方向： " + snake.getDirection());
 
@@ -168,7 +176,7 @@ public class UDPClient extends Frame implements Runnable {
         }
 
         //双缓冲技术，填充内存画板
-        gBuffer.setColor(Color.WHITE);
+        gBuffer.setColor(Color.gray);
         gBuffer.fillRect(0, 0, LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
 
         //画蛇画食物(在内存画板上)
@@ -256,6 +264,80 @@ public class UDPClient extends Frame implements Runnable {
                 } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
                         e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
                     keyboardQueue.put(e.getKeyCode());
+                } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    Snake snake = snakes.get(playerName);
+                    Direction d = snake.getDirection();
+                    switch (d) {
+                        case UP:
+                            for (int i = 0; i < 5; i++) {
+                                keyboardQueue.put(KeyEvent.VK_UP);
+                                Thread.sleep(2);
+                            }
+                            break;
+                        case DOWN:
+                            for (int i = 0; i < 5; i++) {
+                                keyboardQueue.put(KeyEvent.VK_DOWN);
+                                Thread.sleep(2);
+                            }
+                            break;
+                        case LEFT:
+                            for (int i = 0; i < 5; i++) {
+                                keyboardQueue.put(KeyEvent.VK_LEFT);
+                                Thread.sleep(2);
+                            }
+                            break;
+                        case RIGHT:
+                            for (int i = 0; i < 5; i++) {
+                                keyboardQueue.put(KeyEvent.VK_RIGHT);
+                                Thread.sleep(2);
+                            }
+                            break;
+                    }
+                } else if (e.getKeyCode() == KeyEvent.VK_Z) {
+                    Snake snake = snakes.get(playerName);
+                    Direction d = snake.getDirection();
+                    switch (d) {
+                        case UP:
+                            keyboardQueue.put(KeyEvent.VK_LEFT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_UP);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_RIGHT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_UP);
+                            Thread.sleep(5);
+                            break;
+                        case DOWN:
+                            keyboardQueue.put(KeyEvent.VK_LEFT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_DOWN);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_RIGHT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_DOWN);
+                            Thread.sleep(5);
+                            break;
+                        case LEFT:
+                            keyboardQueue.put(KeyEvent.VK_UP);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_LEFT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_DOWN);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_LEFT);
+                            Thread.sleep(5);
+                            break;
+                        case RIGHT:
+                            keyboardQueue.put(KeyEvent.VK_UP);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_RIGHT);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_DOWN);
+                            Thread.sleep(5);
+                            keyboardQueue.put(KeyEvent.VK_RIGHT);
+                            Thread.sleep(5);
+                            break;
+                    }
                 }
             } catch (InterruptedException interruptedException) {
                 System.err.println(interruptedException.getMessage());

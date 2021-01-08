@@ -1,10 +1,12 @@
 package com.app;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.jtchen.UDPServerMain;
 
 import com.cc.UDPClient;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.net.UnknownHostException;
 
 /**
@@ -18,8 +20,13 @@ public class SnakeGUI {
     private JButton HOSTAGAMEButton;
     private JTextField textField1;
     private JTextField textField2;
+    private JTable table1;
+    private DefaultTableModel tableModel;
 
     public SnakeGUI() {
+        tableModel = (DefaultTableModel) table1.getModel();
+        tableModel.addColumn("player");
+        tableModel.addColumn("Score");
         textField1.setText("localhost");
         textField2.setText("hah");
         HOSTAGAMEButton.addActionListener(e -> {
@@ -33,7 +40,7 @@ public class SnakeGUI {
                 if (name.isEmpty() || host.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    Runnable client = new UDPClient(name, host);
+                    Runnable client = new UDPClient(name, host, tableModel);
                     new Thread(client).start();
                 }
             } catch (UnknownHostException a) {
@@ -45,6 +52,8 @@ public class SnakeGUI {
     }
 
     public static void main(String[] args) {
+        FlatLightLaf.install();
+
         JFrame frame = new JFrame("SnakeGUI");
         frame.setContentPane(new SnakeGUI().snake);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
