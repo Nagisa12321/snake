@@ -27,8 +27,8 @@ public class SnakeGUI {
         tableModel = (DefaultTableModel) table1.getModel();
         tableModel.addColumn("player");
         tableModel.addColumn("Score");
-        textField1.setText("localhost");
-        textField2.setText("hah");
+        textField1.setText("jt_laptop");
+        textField2.setText("cc");
         HOSTAGAMEButton.addActionListener(e -> {
             HOSTAGAMEButton.setEnabled(false);
             new Thread(new UDPServerMain()).start();
