@@ -338,6 +338,23 @@ public class UDPClient extends Frame implements Runnable {
                             Thread.sleep(5);
                             break;
                     }
+                } else if (e.getKeyCode() == KeyEvent.VK_X) {
+                    for (int i = 0; i < 10; i++) {
+                        keyboardQueue.put(KeyEvent.VK_UP);
+                        Thread.sleep(5);
+                    }
+                    for (int i = 0; i < 10; i++) {
+                        keyboardQueue.put(KeyEvent.VK_RIGHT);
+                        Thread.sleep(5);
+                    }
+                    for (int i = 0; i < 10; i++) {
+                        keyboardQueue.put(KeyEvent.VK_DOWN);
+                        Thread.sleep(5);
+                    }
+                    for (int i = 0; i < 10; i++) {
+                        keyboardQueue.put(KeyEvent.VK_LEFT);
+                        Thread.sleep(5);
+                    }
                 }else if(e.getKeyCode()==KeyEvent.VK_V){
                     keyboardQueue.put(-1);
                 }
