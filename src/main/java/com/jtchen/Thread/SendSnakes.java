@@ -11,16 +11,15 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Vector;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
 
 public class SendSnakes implements Runnable {
     public static final int LENGTH = 30; // 真实长宽
 
-    private Vector<ClientInfo> clientInfos; // 用户IP PORT列表
+    private BlockingQueue<ClientInfo> clientInfos; // 用户IP PORT列表
 
-    private Vector<String> operation; // 操作队列
+    private BlockingQueue<String> operation; // 操作队列
 
     private HashMap<String, Snake> snakes; // 蛇
 
@@ -28,8 +27,8 @@ public class SendSnakes implements Runnable {
 
     private HashSet<Point> body; // 身体点集
 
-    public SendSnakes(Vector<ClientInfo> clientInfos,
-                      Vector<String> operation,
+    public SendSnakes(BlockingQueue<ClientInfo> clientInfos,
+                      BlockingQueue<String> operation,
                       HashMap<String, Snake> snakes,
                       HashSet<Point> body) {
         this.clientInfos = clientInfos;
@@ -38,15 +37,14 @@ public class SendSnakes implements Runnable {
         this.body = body;
 
         // 地图随机生成食物
-        GenerateFood();
+        foodPoint = new Point(10, 10);
         new Thread(new PushSnakeThread(snakes, foodPoint, body, clientInfos)).start();
     }
 
 
     public void run() {
         while (true) {
-            if (clientInfos.isEmpty()) continue;
-            if (!operation.isEmpty()) {
+            try {
                 // 解析一个Snake的name和动作
                 NameAndOperation nAo = getNameAndOperation();
                 String name = nAo.name;
@@ -73,19 +71,18 @@ public class SendSnakes implements Runnable {
                 }
 
                 // 遍历玩家列表 发送UDPSnakes给玩家们
-                try {
-                    SendUDPSnakes();
-                } catch (IOException e) {
-                    System.err.println(e.getMessage() + "发送UDPSnakes给玩家们失败!");
-                }
+                SendUDPSnakes();
+
+            } catch (InterruptedException | IOException e) {
+                System.err.println(e.getMessage());
             }
         }
     }
 
     /* 解析字符串 获得name和op */
-    public NameAndOperation getNameAndOperation() {
+    public NameAndOperation getNameAndOperation() throws InterruptedException {
         // 出队一个name 和 op 的 String 并且解析一番
-        String s = operation.remove(0);
+        String s = operation.take();
 
         String[] tmp = s.split(" ");
         String name = tmp[0];
@@ -117,6 +114,7 @@ public class SendSnakes implements Runnable {
                     // 返回false
                     return snake.move(movePoint, tmp, body);
                 }
+                break;
             case "up":
                 if (direction != 1) {
                     Point movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
@@ -126,6 +124,7 @@ public class SendSnakes implements Runnable {
                         GenerateFood();
                     return snake.move(movePoint, tmp, body);
                 }
+                break;
             case "right":
                 if (direction != 2) {
                     Point movePoint = new Point(++x % LENGTH, y);
@@ -134,6 +133,7 @@ public class SendSnakes implements Runnable {
                     if (movePoint.equals(foodPoint)) GenerateFood();
                     return snake.move(movePoint, tmp, body);
                 }
+                break;
             case "down":
                 if (direction != 0) {
                     Point movePoint = new Point(x, ++y % LENGTH);
@@ -142,6 +142,7 @@ public class SendSnakes implements Runnable {
                     if (movePoint.equals(foodPoint)) GenerateFood();
                     return snake.move(movePoint, tmp, body);
                 }
+                break;
         }
         // 如果什么都没发生则返回true
         // 比如说蛇的方向是向前, 你按了后, 则什么也没发生
@@ -159,7 +160,7 @@ public class SendSnakes implements Runnable {
         if (body.contains(tmp)) {
             GenerateFood();
         } else {
-            foodPoint = new Point(x, y);
+//            foodPoint = new Point(x, y);
             foodPoint.setX(x);
             foodPoint.setY(y);
         }
@@ -201,12 +202,12 @@ public class SendSnakes implements Runnable {
         private HashMap<String, Snake> snakes;
         private Point foodPoint;
         private HashSet<Point> body;
-        private Vector<ClientInfo> clientInfos;
+        private BlockingQueue<ClientInfo> clientInfos;
 
         public PushSnakeThread(HashMap<String, Snake> snakes,
                                Point foodPoint,
                                HashSet<Point> body,
-                               Vector<ClientInfo> clientInfos) {
+                               BlockingQueue<ClientInfo> clientInfos) {
             this.snakes = snakes;
             this.foodPoint = foodPoint;
             this.body = body;
@@ -219,6 +220,7 @@ public class SendSnakes implements Runnable {
             while (true) {
                 // push snakes
 
+                List<String> diePlayer = new ArrayList<>(100);
                 for (var entry : snakes.entrySet()) {
                     Snake snake = entry.getValue();
 
@@ -259,12 +261,16 @@ public class SendSnakes implements Runnable {
                         // 删除身体上的点
                         for (var point : snake.getQueue()) {
                             body.remove(point);
+                            diePlayer.add(entry.getKey());
                         }
                     }
                 }
+                for (var name : diePlayer) {
+                    snakes.remove(name);
+                }
                 try {
                     SendUDPSnakes();
-                    Thread.sleep(20);
+                    Thread.sleep(100);
                 } catch (InterruptedException | IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -300,7 +306,7 @@ public class SendSnakes implements Runnable {
             if (body.contains(tmp)) {
                 GenerateFood();
             } else {
-                foodPoint = new Point(x, y);
+//                foodPoint = new Point(x, y);
                 foodPoint.setX(x);
                 foodPoint.setY(y);
             }

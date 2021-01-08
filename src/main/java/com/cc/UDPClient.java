@@ -82,7 +82,7 @@ public class UDPClient extends Frame implements Runnable {
         new Thread(new UDPClientReceive(socket, drawQueue)).start();
 
         //线程开始后才加键盘监听
-        addKeyListener(new KeyMonitor());
+        addKeyListener(new KeyMonitor(this));
 
         while (true) {
             try {
@@ -203,11 +203,15 @@ public class UDPClient extends Frame implements Runnable {
 
 
     private class KeyMonitor extends KeyAdapter {
+        private UDPClient window;
+        public KeyMonitor(UDPClient window){
+            this.window = window;
+        }
         @Override
         public void keyPressed(KeyEvent e) {
-            // ESC退出
+            // ESC关闭窗口
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                System.exit(0);
+                window.dispose();
 
                 //如果是上下左右,加入消息队列给UDPClientSend
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
