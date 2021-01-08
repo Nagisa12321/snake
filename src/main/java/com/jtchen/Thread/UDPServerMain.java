@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @SuppressWarnings("InfiniteLoopStatement")
 public class UDPServerMain implements Runnable {
@@ -33,10 +35,10 @@ public class UDPServerMain implements Runnable {
         System.out.println("已开启服务器main函数!");
 
         // main和GetOperation维护的玩家列表
-        Vector<ClientInfo> clientInfos = new Vector<>();
+        BlockingQueue<ClientInfo> clientInfos = new LinkedBlockingQueue<>();
 
         // SendSnakes和GetOperation维护的操作队列
-        Vector<String> operation = new Vector<>();
+        BlockingQueue<String> operation = new LinkedBlockingQueue<>();
 
         // main和SendSnakes维护的snakes map
         // SendSnakes如果move snake失败了可以从表中删除
