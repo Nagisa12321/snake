@@ -8,13 +8,14 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
 
 public class UDPClientSend implements Runnable {
     private final InetAddress serverIP;
     private final int serverPort;
     private final String playerName;
     private final DatagramSocket socket;
-    private final Vector<Integer> keyboardQueue;
+    private final BlockingQueue<Integer> keyboardQueue;
     private final HashMap<Integer, String> EventMap = new HashMap<>() {{
         put(KeyEvent.VK_UP, "up");
         put(KeyEvent.VK_DOWN, "down");
@@ -22,7 +23,7 @@ public class UDPClientSend implements Runnable {
         put(KeyEvent.VK_RIGHT, "right");
     }};
 
-    public UDPClientSend(InetAddress serverIP, int serverPort, String playerName, DatagramSocket socket, Vector<Integer> keyboardQueue) {
+    public UDPClientSend(InetAddress serverIP, int serverPort, String playerName, DatagramSocket socket, BlockingQueue<Integer> keyboardQueue) {
         this.serverIP = serverIP;
         this.serverPort = serverPort;
         this.playerName = playerName;
@@ -34,17 +35,16 @@ public class UDPClientSend implements Runnable {
     public void run() {
         try {
             while (true) {
-                if (keyboardQueue.isEmpty()) continue;
 
                 //拼接消息串
-                String msg = playerName + " " + EventMap.get(keyboardQueue.remove(0));
+                String msg = playerName + " " + EventMap.get(keyboardQueue.take());
                 byte[] msgBody = msg.getBytes(StandardCharsets.UTF_8);
 
                 //发送给服务器
                 DatagramPacket msgPacket = new DatagramPacket(msgBody, msgBody.length, serverIP, serverPort);
                 socket.send(msgPacket);
             }
-        }catch (IOException e){
+        }catch (IOException |InterruptedException e){
             System.err.println(e.getMessage());
         }
     }
