@@ -6,13 +6,14 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.Vector;
+import java.util.concurrent.BlockingQueue;
 
 public class GetOperation implements Runnable{
     public static final int PORT = 8090;
 
-    private Vector<String> operation;
+    private BlockingQueue<String> operation;
 
-    public GetOperation( Vector<String> operation) {
+    public GetOperation( BlockingQueue<String> operation) {
         this.operation = operation;
     }
 
@@ -30,8 +31,8 @@ public class GetOperation implements Runnable{
                         0, packet.getLength(), StandardCharsets.UTF_8);
 
                 // 加入队列中, 让SendSnakes解析操作并且处理
-                operation.add(opStr);
-            } catch (IOException e) {
+                operation.put(opStr);
+            } catch (IOException|InterruptedException e) {
                 System.err.println(e.getMessage() + "(GetOperation)");
             }
         }
