@@ -265,6 +265,10 @@ public class UDPClient extends Frame implements Runnable {
                         e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
                     keyboardQueue.put(e.getKeyCode());
                 } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+
+                    // 简单加速
+
+
                     Snake snake = snakes.get(playerName);
                     Direction d = snake.getDirection();
                     switch (d) {
@@ -294,6 +298,9 @@ public class UDPClient extends Frame implements Runnable {
                             break;
                     }
                 } else if (e.getKeyCode() == KeyEvent.VK_Z) {
+
+                    // 鬼畜前进
+
                     Snake snake = snakes.get(playerName);
                     Direction d = snake.getDirection();
                     switch (d) {
@@ -339,6 +346,9 @@ public class UDPClient extends Frame implements Runnable {
                             break;
                     }
                 } else if (e.getKeyCode() == KeyEvent.VK_X) {
+
+                    // 转大圈
+
                     for (int i = 0; i < 10; i++) {
                         keyboardQueue.put(KeyEvent.VK_UP);
                         Thread.sleep(5);
@@ -355,8 +365,41 @@ public class UDPClient extends Frame implements Runnable {
                         keyboardQueue.put(KeyEvent.VK_LEFT);
                         Thread.sleep(5);
                     }
-                }else if(e.getKeyCode()==KeyEvent.VK_V){
+                } else if (e.getKeyCode() == KeyEvent.VK_V) {
+
+                    // 开启super模式
+
                     keyboardQueue.put(-1);
+                } else if (e.getKeyCode() == KeyEvent.VK_M) {
+
+                    // 无限增长
+
+                    keyboardQueue.put(KeyEvent.VK_M);
+                } else if (e.getKeyCode() == KeyEvent.VK_J) {
+
+                    // 时间缩短
+
+                    keyboardQueue.put(KeyEvent.VK_J);
+                } else if (e.getKeyCode() == KeyEvent.VK_K) {
+
+                    // 时间增长
+
+                    keyboardQueue.put(KeyEvent.VK_K);
+                } else if (e.getKeyCode() == KeyEvent.VK_P) {
+
+                    // 清除食物
+
+                    keyboardQueue.put(KeyEvent.VK_P);
+                } else if (e.getKeyCode() == KeyEvent.VK_H) {
+
+                    // 缩短蛇
+
+                    keyboardQueue.put(KeyEvent.VK_H);
+                } else if (e.getKeyCode() == KeyEvent.VK_E) {
+
+                    // 随机生成食物
+
+                    keyboardQueue.put(KeyEvent.VK_E);
                 }
             } catch (InterruptedException interruptedException) {
                 System.err.println(interruptedException.getMessage());

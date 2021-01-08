@@ -28,6 +28,8 @@ public class SendSnakes implements Runnable {
 
     private final HashSet<Point> body; // 身体点集
 
+    private SleepTime sleepTime;
+
     public SendSnakes(Vector<ClientInfo> clientInfos,
                       BlockingQueue<String> operation,
                       HashMap<String, Snake> snakes,
@@ -38,6 +40,7 @@ public class SendSnakes implements Runnable {
         this.snakes = snakes;
         this.body = body;
         this.mutex = mutex;
+        this.sleepTime = new SleepTime(201);
         foodPoints = new HashSet<>();
 
         // 地图随机生成食物
@@ -45,7 +48,7 @@ public class SendSnakes implements Runnable {
         Point foodPoint2 = new Point(20, 20);
         foodPoints.add(foodPoint1);
         foodPoints.add(foodPoint2);
-        new Thread(new PushSnakeThread(snakes, foodPoints, body, clientInfos, mutex)).start();
+        new Thread(new PushSnakeThread(snakes, foodPoints, body, clientInfos, mutex, sleepTime)).start();
     }
 
 
@@ -75,7 +78,7 @@ public class SendSnakes implements Runnable {
                     // 删除身体上的点
                     for (var point : snake.getQueue()) {
                         if (idx++ % 2 == 0)
-                        foodPoints.add(point);
+                            foodPoints.add(point);
                         body.remove(point);
                     }
 
@@ -172,6 +175,66 @@ public class SendSnakes implements Runnable {
                     return res;
                 }
                 break;
+            case "m":
+                Direction d = snake.getDirection();
+                Point movePoint;
+                switch (d) {
+                    case LEFT:
+                        movePoint = new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y);
+                        if (body.contains(movePoint) || foodPoints.contains(movePoint)) break;
+
+                        foodPoints.add(movePoint);
+                        snake.move(movePoint, foodPoints, body);
+                        foodPoints.remove(movePoint);
+                        break;
+                    case UP:
+                        movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
+                        if (body.contains(movePoint) || foodPoints.contains(movePoint)) break;
+
+                        foodPoints.add(movePoint);
+                        snake.move(movePoint, foodPoints, body);
+                        foodPoints.remove(movePoint);
+                        break;
+                    case RIGHT:
+                        movePoint = new Point(++x % LENGTH, y);
+                        if (body.contains(movePoint) || foodPoints.contains(movePoint)) break;
+
+                        foodPoints.add(movePoint);
+                        snake.move(movePoint, foodPoints, body);
+                        foodPoints.remove(movePoint);
+                        break;
+                    case DOWN:
+                        movePoint = new Point(x, ++y % LENGTH);
+                        if (body.contains(movePoint) || foodPoints.contains(movePoint)) break;
+                        foodPoints.add(movePoint);
+                        snake.move(movePoint, foodPoints, body);
+                        foodPoints.remove(movePoint);
+                        break;
+                }
+                break;
+            case "j":
+                sleepTime.setTime(sleepTime.getTime() - 50);
+                break;
+            case "k":
+                sleepTime.setTime(sleepTime.getTime() + 50);
+                break;
+            case "p":
+                foodPoints.clear();
+                break;
+            case "h":
+                for (var entry : snakes.entrySet()) {
+                    Snake tmpS = entry.getValue();
+                    if (!tmpS.equals(snake) && tmpS.getQueue().size() > 0) {
+                        Point point1 = tmpS.getQueue().poll();
+                        body.remove(point1);
+                    }
+                }
+                break;
+            case "e":
+                GenerateFood();
+                break;
+
+
         }
 
         // 如果什么都没发生则返回true
@@ -265,17 +328,20 @@ public class SendSnakes implements Runnable {
         private final HashSet<Point> body;
         private final Vector<ClientInfo> clientInfos;
         private final Semaphore mutex;
+        private SleepTime sleepTime;
 
         public PushSnakeThread(HashMap<String, Snake> snakes,
                                HashSet<Point> foodPoints,
                                HashSet<Point> body,
                                Vector<ClientInfo> clientInfos,
-                               Semaphore mutex) {
+                               Semaphore mutex,
+                               SleepTime sleepTime) {
             this.snakes = snakes;
             this.foodPoints = foodPoints;
             this.body = body;
             this.clientInfos = clientInfos;
             this.mutex = mutex;
+            this.sleepTime = sleepTime;
         }
 
 
@@ -338,7 +404,7 @@ public class SendSnakes implements Runnable {
                             // 删除身体上的点
                             for (var point : snake.getQueue()) {
                                 if (idx++ % 2 == 0)
-                                foodPoints.add(point);
+                                    foodPoints.add(point);
                                 body.remove(point);
 
                                 body.remove(point);
@@ -355,7 +421,7 @@ public class SendSnakes implements Runnable {
                 try {
                     mutex.release();
                     SendUDPSnakes();
-                    Thread.sleep(200);
+                    Thread.sleep(sleepTime.getTime());
                 } catch (InterruptedException | IOException | CloneNotSupportedException e) {
                     System.out.println(e.getMessage());
                 }

@@ -16,12 +16,18 @@ public class UDPClientSend implements Runnable {
     private final String playerName;
     private final DatagramSocket socket;
     private final BlockingQueue<Integer> keyboardQueue;
-    private  boolean superMode = false;
+    private boolean superMode = false;
     private final HashMap<Integer, String> EventMap = new HashMap<>() {{
         put(KeyEvent.VK_UP, "up");
         put(KeyEvent.VK_DOWN, "down");
         put(KeyEvent.VK_LEFT, "left");
         put(KeyEvent.VK_RIGHT, "right");
+        put(KeyEvent.VK_M, "m");
+        put(KeyEvent.VK_J, "j");
+        put(KeyEvent.VK_K, "k");
+        put(KeyEvent.VK_P, "p");
+        put(KeyEvent.VK_H, "h");
+        put(KeyEvent.VK_E, "e");
     }};
 
     public UDPClientSend(InetAddress serverIP, int serverPort, String playerName, DatagramSocket socket, BlockingQueue<Integer> keyboardQueue) {
@@ -37,8 +43,8 @@ public class UDPClientSend implements Runnable {
         try {
             while (true) {
                 int op = keyboardQueue.take();
-                if(op==-1){
-                    superMode=!superMode;
+                if (op == -1) {
+                    superMode = !superMode;
                     continue;
                 }
                 //拼接消息串
@@ -48,15 +54,15 @@ public class UDPClientSend implements Runnable {
                 //发送给服务器
                 DatagramPacket msgPacket = new DatagramPacket(msgBody, msgBody.length, serverIP, serverPort);
                 socket.send(msgPacket);
-                if(superMode){
+                if (superMode) {
                     System.out.println("superMode!");
-                    for(int i = 0;i<7;++i){
+                    for (int i = 0; i < 7; ++i) {
                         Thread.sleep(4);
                         socket.send(msgPacket);
                     }
                 }
             }
-        }catch (IOException |InterruptedException e){
+        } catch (IOException | InterruptedException e) {
             System.err.println(e.getMessage());
         }
     }

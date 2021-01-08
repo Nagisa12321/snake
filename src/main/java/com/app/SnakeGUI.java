@@ -24,6 +24,7 @@ public class SnakeGUI {
     private DefaultTableModel tableModel;
 
     public SnakeGUI() {
+
         tableModel = (DefaultTableModel) table1.getModel();
         tableModel.addColumn("player");
         tableModel.addColumn("Score");
