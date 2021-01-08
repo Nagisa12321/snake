@@ -1,11 +1,11 @@
-package com.jtchen;
+package com.struct;
 
 import java.net.InetAddress;
 import java.util.Vector;
 
 public class ClientInfo {
-    private int PORT;
-    private InetAddress IP;
+    private final int PORT;
+    private final InetAddress IP;
 
     public ClientInfo(int PORT, InetAddress IP) {
         this.PORT = PORT;

@@ -1,15 +1,12 @@
 package com.struct;
 
-import com.struct.Point;
-
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 
-import static com.jtchen.Thread.SendSnakes.LENGTH;
+import static com.jtchen.SendSnakes.LENGTH;
 
 /**
  * @author jtchen
@@ -31,13 +28,13 @@ public class Snake implements Serializable {
 
     private final Color color; // 蛇的颜色
 
-    private int direction; // 0上 1下 2左 3右
+    private Direction direction; // 0上 1下 2左 3右
 
-    public int getDirection() {
+    public Direction getDirection() {
         return direction;
     }
 
-    public void setDirection(int direction) {
+    public void setDirection(Direction direction) {
         this.direction = direction;
     }
 
@@ -64,7 +61,7 @@ public class Snake implements Serializable {
     }
 
     /* 通过前面的点来判断蛇该做出什么行为 */
-    public boolean move(Point point, Point foodPoint, Set<Point> body) {
+    public boolean move(Point point, Set<Point> foodPoints, Set<Point> body) {
         // 如果前面的点是body, 则退出游戏
         if (body.contains(point))
             return false;
@@ -75,7 +72,7 @@ public class Snake implements Serializable {
         body.add(point);
 
         // 如果不是food则会出队
-        if (!point.equals(foodPoint)) {
+        if (!foodPoints.contains(point)) {
             Point point1 = queue.poll();
             body.remove(point1);
         }
@@ -83,22 +80,22 @@ public class Snake implements Serializable {
     }
 
     /* 让蛇在其方向上前进一格 */
-    public boolean goAHead(Point foodPoint, Set<Point> body) {
+    /*public boolean goAHead(Point foodPoint, Set<Point> body) {
         int x = head.x();
         int y = head.y();
         switch (direction) {
             // 0上 1下 2左 3右
-            case 2:
+            case LEFT:
                 return move(new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y), foodPoint, body);
-            case 0:
+            case UP:
                 return move(new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y), foodPoint, body);
-            case 3:
+            case RIGHT:
                 return move(new Point(++x % LENGTH, y), foodPoint, body);
-            case 1:
+            case DOWN:
                 return move(new Point(x, ++y % LENGTH), foodPoint, body);
         }
         return true;
-    }
+    }*/
 
 
     public Point getHead() {

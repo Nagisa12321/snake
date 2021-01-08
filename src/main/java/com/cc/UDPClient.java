@@ -1,9 +1,12 @@
 package com.cc;
 
+import com.jtchen.SendSnakes;
+import com.struct.Direction;
 import com.struct.Point;
 import com.struct.Snake;
 import com.struct.UDPSnake;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -15,28 +18,29 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class UDPClient extends Frame implements Runnable {
-    public static final Color HEAD_COLOR = Color.red; // è›‡å¤´éƒ¨é¢œè‰²
+    public static final Color HEAD_COLOR = Color.red; // ÉßÍ·²¿ÑÕÉ«
 
-    public static final Color FOOD_COLOR = Color.yellow; // é£Ÿç‰©é¢œè‰²
+    public static final Color FOOD_COLOR = Color.yellow; // Ê³ÎïÑÕÉ«
 
-    public static final int BLOCK = 20; // æ–¹æ ¼é•¿å®½
+    public static final int BLOCK = 15; // ·½¸ñ³¤¿í
 
-    public static final int LENGTH = 30; // çœŸå®é•¿å®½
+    public static final int LENGTH = SendSnakes.LENGTH; // ÕæÊµ³¤¿í
 
-    private static final int LENGTH_ROW = LENGTH + 2; // ç•Œé¢æ–¹æ ¼è¡Œ
+    private static final int LENGTH_ROW = LENGTH + 2; // ½çÃæ·½¸ñĞĞ
 
-    private static final int LENGTH_COL = LENGTH + 3; // ç•Œé¢æ–¹æ ¼åˆ—
+    private static final int LENGTH_COL = LENGTH + 3; // ½çÃæ·½¸ñÁĞ
 
     private final String playerName;
 
-    InetAddress IP;
+    private final InetAddress IP;
 
     private final BlockingQueue<Integer> keyboardQueue;
 
@@ -48,7 +52,7 @@ public class UDPClient extends Frame implements Runnable {
 
     private HashMap<String, Snake> snakes;
 
-    private Point food;
+    private HashSet<Point> foodPoints;
 
     public UDPClient(String playerName, String host) throws HeadlessException, UnknownHostException {
         this.playerName = playerName;
@@ -77,29 +81,30 @@ public class UDPClient extends Frame implements Runnable {
             return;
         }
 
-        //å¼€å¯æ”¶,å‘çº¿ç¨‹,åˆ†åˆ«æœ‰å¯¹åº”çš„æ¶ˆæ¯é˜Ÿåˆ—ä¸æ­¤è¿›ç¨‹æ²Ÿé€š
+        //¿ªÆôÊÕ,·¢Ïß³Ì,·Ö±ğÓĞ¶ÔÓ¦µÄÏûÏ¢¶ÓÁĞÓë´Ë½ø³Ì¹µÍ¨
         new Thread(new UDPClientSend(IP, 8090, playerName, socket, keyboardQueue)).start();
         new Thread(new UDPClientReceive(socket, drawQueue)).start();
 
-        //çº¿ç¨‹å¼€å§‹åæ‰åŠ é”®ç›˜ç›‘å¬
+        //Ïß³Ì¿ªÊ¼ºó²Å¼Ó¼üÅÌ¼àÌı
         addKeyListener(new KeyMonitor(this));
 
         while (true) {
             try {
-                //æ¶ˆæ¯é˜Ÿåˆ—å–å‡ºsnakesè¡¨
+                //ÏûÏ¢¶ÓÁĞÈ¡³ösnakes±í
                 UDPSnake nowDraw = drawQueue.take();
                 snakes = nowDraw.getSnakes();
-                food = nowDraw.getFood();
+                foodPoints = nowDraw.getFood();
 
 
-                //æ£€æŸ¥è›‡æ˜¯ä¸æ˜¯siäº†
+                //¼ì²éÉßÊÇ²»ÊÇsiÁË
                 if (!snakes.containsKey(playerName)) {
                     socket.close();
                     this.dispose();
+                    JOptionPane.showMessageDialog(null, "ÄãËÀµôÁË, ¹ş¹ş£¡", "!!!!!", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                //æ¯æ¬¡éƒ½æ”¶åˆ°æ¶ˆæ¯é‡ç”»ç”»æ¿
+                //Ã¿´Î¶¼ÊÕµ½ÏûÏ¢ÖØ»­»­°å
                 repaint();
             } catch (InterruptedException e) {
                 System.err.println(e.getMessage());
@@ -107,7 +112,7 @@ public class UDPClient extends Frame implements Runnable {
         }
     }
 
-    // ç”»å‡ºè›‡å’Œé£Ÿç‰©
+    // »­³öÉßºÍÊ³Îï
     public void draw(Graphics g) {
         drawSnakes(g);
         drawFood(g);
@@ -117,7 +122,7 @@ public class UDPClient extends Frame implements Runnable {
     public void drawSnakes(Graphics g) {
         for (var entry : snakes.entrySet()) {
             Snake snake = entry.getValue();
-            System.err.println("æ–¹å‘ï¼š " + snake.getDirection());
+            System.err.println("·½Ïò£º " + snake.getDirection());
 
             Color c = g.getColor();
             g.setColor(snake.getColor());
@@ -139,43 +144,45 @@ public class UDPClient extends Frame implements Runnable {
         }
     }
 
-    // ç”»å‡ºé£Ÿç‰©
+    // »­³öÊ³Îï
     public void drawFood(Graphics g) {
         Color c = g.getColor();
         g.setColor(FOOD_COLOR);
 
         //draw food
-        g.fillRect(toFillParameter(food).x()
-                * BLOCK, toFillParameter(food).y()
-                * BLOCK, BLOCK, BLOCK);
+
+        for (var food : foodPoints)
+            g.fillRect(toFillParameter(food).x()
+                    * BLOCK, toFillParameter(food).y()
+                    * BLOCK, BLOCK, BLOCK);
 
         g.setColor(c);
 
     }
 
     public void update(Graphics g) {
-        // è‹¥è™šæ‹Ÿç”»å¸ƒä¸ºç©º, æ–°å»ºè™šæ‹Ÿç”»å¸ƒ
+        // ÈôĞéÄâ»­²¼Îª¿Õ, ĞÂ½¨ĞéÄâ»­²¼
         if (iBuffer == null) {
             iBuffer = createImage(LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
             gBuffer = iBuffer.getGraphics();
         }
 
-        //åŒç¼“å†²æŠ€æœ¯ï¼Œå¡«å……å†…å­˜ç”»æ¿
+        //Ë«»º³å¼¼Êõ£¬Ìî³äÄÚ´æ»­°å
         gBuffer.setColor(Color.WHITE);
         gBuffer.fillRect(0, 0, LENGTH_ROW * BLOCK, LENGTH_COL * BLOCK);
 
-        //ç”»è›‡ç”»é£Ÿç‰©(åœ¨å†…å­˜ç”»æ¿ä¸Š)
+        //»­Éß»­Ê³Îï(ÔÚÄÚ´æ»­°åÉÏ)
         draw(gBuffer);
         paint(gBuffer);
 
-        //å†…å­˜ç”»æ¿ç›´æ¥ç”»å‰å°
+        //ÄÚ´æ»­°åÖ±½Ó»­Ç°Ì¨
         g.drawImage(iBuffer, 0, 0, null);
 
     }
 
     /**
-     * æŠŠä½ æƒ³è¦çš„åæ ‡è½¬æ¢ä¸ºç”»å¸ƒä¸Šçš„åæ ‡
-     * PS: ç”»å¸ƒå·¦ä¸Šè§’ä¸º(0, 0), ä¸”ä½ è¾“å…¥{@code new Point(0, 0)}å³å¯
+     * °ÑÄãÏëÒªµÄ×ø±ê×ª»»Îª»­²¼ÉÏµÄ×ø±ê
+     * PS: »­²¼×óÉÏ½ÇÎª(0, 0), ÇÒÄãÊäÈë{@code new Point(0, 0)}¼´¿É
      */
     public Point toFillParameter(Point point) {
         return new Point(point.x() + 1, point.y() + 2);
@@ -183,13 +190,13 @@ public class UDPClient extends Frame implements Runnable {
 
     private DatagramSocket establish(InetAddress serverIp, int serverPort, String name) {
         try {
-            //å‡†å¤‡å¥½å‘é€çš„åŒ…ï¼Œç«¯å£éšæœº
+            //×¼±¸ºÃ·¢ËÍµÄ°ü£¬¶Ë¿ÚËæ»ú
             DatagramSocket socket = new DatagramSocket(0);
             byte[] sendName = name.getBytes(StandardCharsets.UTF_8);
             DatagramPacket request = new DatagramPacket(sendName, sendName.length, serverIp, serverPort);
             DatagramPacket respond = new DatagramPacket(new byte[1], 1);
 
-            //pokeä¸€ä¸‹æœåŠ¡å™¨,è¶…æ—¶æŠ›å¼‚å¸¸
+            //pokeÒ»ÏÂ·şÎñÆ÷,³¬Ê±Å×Òì³£
             //socket.setSoTimeout(5000);
             socket.send(request);
             socket.receive(respond);
@@ -204,23 +211,54 @@ public class UDPClient extends Frame implements Runnable {
 
     private class KeyMonitor extends KeyAdapter {
         private UDPClient window;
-        public KeyMonitor(UDPClient window){
+        private HashMap<Direction, List<Integer>> dMap = new HashMap<>() {{
+            put(Direction.UP, new ArrayList<>() {{
+                add(KeyEvent.VK_LEFT);
+                add(KeyEvent.VK_DOWN);
+                add(KeyEvent.VK_RIGHT);
+            }});
+            put(Direction.DOWN, new ArrayList<>() {{
+                add(KeyEvent.VK_LEFT);
+                add(KeyEvent.VK_UP);
+                add(KeyEvent.VK_RIGHT);
+            }});
+            put(Direction.LEFT, new ArrayList<>() {{
+                add(KeyEvent.VK_DOWN);
+                add(KeyEvent.VK_RIGHT);
+                add(KeyEvent.VK_UP);
+            }});
+            put(Direction.RIGHT, new ArrayList<>() {{
+                add(KeyEvent.VK_DOWN);
+                add(KeyEvent.VK_LEFT);
+                add(KeyEvent.VK_UP);
+            }});
+        }};
+
+        public KeyMonitor(UDPClient window) {
             this.window = window;
         }
+
         @Override
         public void keyPressed(KeyEvent e) {
-            // ESCå…³é—­çª—å£
-            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                window.dispose();
-
-                //å¦‚æœæ˜¯ä¸Šä¸‹å·¦å³,åŠ å…¥æ¶ˆæ¯é˜Ÿåˆ—ç»™UDPClientSend
-            } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
-                    e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                try {
+            try {
+                // ESC¹Ø±Õ´°¿Ú
+                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                    /*window.dispose();*/
+                    Snake snake = snakes.get(playerName);
+                    Direction d = snake.getDirection();
+                    var opList = dMap.get(d);
+                    /*keyboardQueue.addAll(opList);*/
+                    for (var op : opList) {
+                        keyboardQueue.put(op);
+                        Thread.sleep(5);
+                    }
+                    //Èç¹ûÊÇÉÏÏÂ×óÓÒ,¼ÓÈëÏûÏ¢¶ÓÁĞ¸øUDPClientSend
+                } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN ||
+                        e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT) {
                     keyboardQueue.put(e.getKeyCode());
-                } catch (InterruptedException interruptedException) {
-                    interruptedException.printStackTrace();
                 }
+            } catch (InterruptedException interruptedException) {
+                System.err.println(interruptedException.getMessage());
             }
         }
     }

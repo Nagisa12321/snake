@@ -1,12 +1,10 @@
 package com.app;
 
-import com.jtchen.Thread.UDPServerMain;
+import com.jtchen.UDPServerMain;
 
 import com.cc.UDPClient;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
 
 /**
@@ -24,30 +22,25 @@ public class SnakeGUI {
     public SnakeGUI() {
         textField1.setText("localhost");
         textField2.setText("hah");
-        HOSTAGAMEButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                HOSTAGAMEButton.setEnabled(false);
-                new Thread(new UDPServerMain()).start();
-            }
+        HOSTAGAMEButton.addActionListener(e -> {
+            HOSTAGAMEButton.setEnabled(false);
+            new Thread(new UDPServerMain()).start();
         });
-        JOINAGAMEButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String name = textField2.getText();
-                String host = textField1.getText();
-                try {
-                    if (name.isEmpty() || host.isEmpty()) {
-                        JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        Runnable client = new UDPClient(name, host);
-                        new Thread(client).start();
-                    }
-                } catch (UnknownHostException a) {
+        JOINAGAMEButton.addActionListener(e -> {
+            String name = textField2.getText();
+            String host = textField1.getText();
+            try {
+                if (name.isEmpty() || host.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
-                    System.err.println(a.getMessage());
+                } else {
+                    Runnable client = new UDPClient(name, host);
+                    new Thread(client).start();
                 }
-
+            } catch (UnknownHostException a) {
+                JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
+                System.err.println(a.getMessage());
             }
+
         });
     }
 

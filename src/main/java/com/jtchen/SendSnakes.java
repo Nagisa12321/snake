@@ -1,11 +1,7 @@
-package com.jtchen.Thread;
+package com.jtchen;
 
-import com.jtchen.ClientInfo;
-import com.struct.Point;
-import com.struct.Snake;
-import com.struct.UDPSnake;
+import com.struct.*;
 
-import java.awt.event.KeyEvent;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -14,18 +10,19 @@ import java.net.DatagramSocket;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class SendSnakes implements Runnable {
-    public static final int LENGTH = 30; // 真实长宽
+    public static final int LENGTH = 40; // 真实长宽
 
-    private BlockingQueue<ClientInfo> clientInfos; // 用户IP PORT列表
+    private final BlockingQueue<ClientInfo> clientInfos; // 用户IP PORT列表
 
-    private BlockingQueue<String> operation; // 操作队列
+    private final BlockingQueue<String> operation; // 操作队列
 
-    private HashMap<String, Snake> snakes; // 蛇
+    private final HashMap<String, Snake> snakes; // 蛇
 
-    private Point foodPoint; // 食物的点
+    private final HashSet<Point> foodPoints; // 食物的点
 
-    private HashSet<Point> body; // 身体点集
+    private final HashSet<Point> body; // 身体点集
 
     public SendSnakes(BlockingQueue<ClientInfo> clientInfos,
                       BlockingQueue<String> operation,
@@ -35,10 +32,14 @@ public class SendSnakes implements Runnable {
         this.operation = operation;
         this.snakes = snakes;
         this.body = body;
+        foodPoints = new HashSet<>();
 
         // 地图随机生成食物
-        foodPoint = new Point(10, 10);
-        new Thread(new PushSnakeThread(snakes, foodPoint, body, clientInfos)).start();
+        Point foodPoint1 = new Point(10, 10);
+        Point foodPoint2 = new Point(20, 20);
+        foodPoints.add(foodPoint1);
+        foodPoints.add(foodPoint2);
+        new Thread(new PushSnakeThread(snakes, foodPoints, body, clientInfos)).start();
     }
 
 
@@ -62,9 +63,13 @@ public class SendSnakes implements Runnable {
                 // 如果snake 撞到body, 则移除snake
                 if (!moveSnake(operation, snake)) {
 
+                    int idx = 0;
                     // 删除身体上的点
-                    for (var point : snake.getQueue())
+                    for (var point : snake.getQueue()) {
+                        if (idx++ % 2 == 0)
+                            foodPoints.add(point);
                         body.remove(point);
+                    }
 
                     snakes.remove(name);
                     System.out.println("玩家 " + name + "死掉了, 已经从表中移除");
@@ -92,7 +97,7 @@ public class SendSnakes implements Runnable {
 
     /* 根据出队的操作移动某条蛇, 并且改变蛇的方向 */
     public boolean moveSnake(String operation, Snake snake) {
-        int direction = snake.getDirection();
+        Direction direction = snake.getDirection();
 
         int x = snake.getHead().x();
         int y = snake.getHead().y();
@@ -101,46 +106,60 @@ public class SendSnakes implements Runnable {
         switch (operation) {
             // 0上 1下 2左 3右
             case "left":
-                if (direction != 3) {
+                if (direction != Direction.RIGHT) {
                     Point movePoint = new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y);
-                    snake.setDirection(2);
+                    snake.setDirection(Direction.LEFT);
                     System.err.println("snake.setDirection(2);" + snake.getDirection());
 
+                    boolean res = snake.move(movePoint, foodPoints, body);
                     // 如果将要遇到的是食物, 则在生成食物
-                    Point tmp = new Point(foodPoint.x(), foodPoint.y());
-                    if (movePoint.equals(foodPoint)) GenerateFood();
+                    if (foodPoints.contains(movePoint)) {
+                        GenerateFood();
+
+                        // 表中删除该食物的点
+                        foodPoints.remove(movePoint);
+                    }
 
                     // 如果移动蛇前面是body则移动失败
                     // 返回false
-                    return snake.move(movePoint, tmp, body);
+                    return res;
                 }
                 break;
             case "up":
-                if (direction != 1) {
+                if (direction != Direction.DOWN) {
                     Point movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
-                    snake.setDirection(0);
-                    Point tmp = new Point(foodPoint.x(), foodPoint.y());
-                    if (movePoint.equals(foodPoint))
+                    snake.setDirection(Direction.UP);
+                    /*Point tmp = new Point(foodPoint.x(), foodPoint.y());*/
+                    boolean res = snake.move(movePoint, foodPoints, body);
+                    if (foodPoints.contains(movePoint)) {
                         GenerateFood();
-                    return snake.move(movePoint, tmp, body);
+                        foodPoints.remove(movePoint);
+                    }
+                    return res;
                 }
                 break;
             case "right":
-                if (direction != 2) {
+                if (direction != Direction.LEFT) {
                     Point movePoint = new Point(++x % LENGTH, y);
-                    snake.setDirection(3);
-                    Point tmp = new Point(foodPoint.x(), foodPoint.y());
-                    if (movePoint.equals(foodPoint)) GenerateFood();
-                    return snake.move(movePoint, tmp, body);
+                    snake.setDirection(Direction.RIGHT);
+                    boolean res = snake.move(movePoint, foodPoints, body);
+                    if (foodPoints.contains(movePoint)) {
+                        GenerateFood();
+                        foodPoints.remove(movePoint);
+                    }
+                    return res;
                 }
                 break;
             case "down":
-                if (direction != 0) {
+                if (direction != Direction.UP) {
                     Point movePoint = new Point(x, ++y % LENGTH);
-                    snake.setDirection(1);
-                    Point tmp = new Point(foodPoint.x(), foodPoint.y());
-                    if (movePoint.equals(foodPoint)) GenerateFood();
-                    return snake.move(movePoint, tmp, body);
+                    snake.setDirection(Direction.DOWN);
+                    boolean res = snake.move(movePoint, foodPoints, body);
+                    if (foodPoints.contains(movePoint)) {
+                        GenerateFood();
+                        foodPoints.remove(movePoint);
+                    }
+                    return res;
                 }
                 break;
         }
@@ -151,24 +170,18 @@ public class SendSnakes implements Runnable {
     }
 
     // 在地图随机一点生成食物
-    @SuppressWarnings("DuplicatedCode")
     public void GenerateFood() {
-        int x = (int) (Math.random() * LENGTH);
-        int y = (int) (Math.random() * LENGTH);
-
-        Point tmp = new Point(x, y);
-        if (body.contains(tmp)) {
-            GenerateFood();
-        } else {
-//            foodPoint = new Point(x, y);
-            foodPoint.setX(x);
-            foodPoint.setY(y);
-        }
+        generateFood(body, foodPoints);
     }
 
     /* 向每个玩家发送UDPSnakes */
     public void SendUDPSnakes() throws IOException {
-        UDPSnake snake = new UDPSnake(snakes, foodPoint);
+        sendUDPSnake(snakes, foodPoints, clientInfos);
+    }
+
+    /* 公用方法sendUDPSnake */
+    private static void sendUDPSnake(HashMap<String, Snake> snakes, HashSet<Point> foodPoints, BlockingQueue<ClientInfo> clientInfos) throws IOException {
+        UDPSnake snake = new UDPSnake(snakes, foodPoints);
 
         for (var c : clientInfos) {
             DatagramSocket socket = new DatagramSocket();
@@ -186,6 +199,19 @@ public class SendSnakes implements Runnable {
         }
     }
 
+    /* 公用方法generateFood */
+    private static void generateFood(HashSet<Point> body, HashSet<Point> foodPoints) {
+        int x = (int) (Math.random() * LENGTH);
+        int y = (int) (Math.random() * LENGTH);
+
+        Point tmp = new Point(x, y);
+
+        // 食物的点或者身体的点存在, 则在随机一次！
+        if (body.contains(tmp) || foodPoints.contains(tmp)) {
+            generateFood(body, foodPoints);
+        } else foodPoints.add(tmp);
+    }
+
     public static class NameAndOperation {
         private final String name;
         private final String Op;
@@ -197,19 +223,19 @@ public class SendSnakes implements Runnable {
         }
     }
 
-    @SuppressWarnings("DuplicatedCode")
+    @SuppressWarnings("BusyWait")
     public static class PushSnakeThread implements Runnable {
-        private HashMap<String, Snake> snakes;
-        private Point foodPoint;
-        private HashSet<Point> body;
-        private BlockingQueue<ClientInfo> clientInfos;
+        private final HashMap<String, Snake> snakes;
+        private final HashSet<Point> foodPoints;
+        private final HashSet<Point> body;
+        private final BlockingQueue<ClientInfo> clientInfos;
 
         public PushSnakeThread(HashMap<String, Snake> snakes,
-                               Point foodPoint,
+                               HashSet<Point> foodPoints,
                                HashSet<Point> body,
                                BlockingQueue<ClientInfo> clientInfos) {
             this.snakes = snakes;
-            this.foodPoint = foodPoint;
+            this.foodPoints = foodPoints;
             this.body = body;
             this.clientInfos = clientInfos;
         }
@@ -226,40 +252,52 @@ public class SendSnakes implements Runnable {
 
                     int x = snake.getHead().x();
                     int y = snake.getHead().y();
-                    int direction = snake.getDirection();
+                    Direction direction = snake.getDirection();
                     boolean success = false;
                     Point movePoint;
-                    Point tmpPoint;
                     switch (direction) {
                         // 0上 1下 2左 3右
-                        case 2:
+                        case LEFT:
                             movePoint = new Point(x - 1 < 0 ? LENGTH - Math.abs(--x) : --x, y);
-                            tmpPoint = new Point(foodPoint.x(), foodPoint.y());
-                            if (movePoint.equals(tmpPoint)) GenerateFood();
-                            success = snake.move(movePoint, tmpPoint, body);
+                            success = snake.move(movePoint, foodPoints, body);
+                            if (foodPoints.contains(movePoint)) {
+                                GenerateFood();
+                                foodPoints.remove(movePoint);
+                            }
                             break;
-                        case 0:
+                        case UP:
                             movePoint = new Point(x, y - 1 < 0 ? LENGTH - Math.abs(--y) : --y);
-                            tmpPoint = new Point(foodPoint.x(), foodPoint.y());
-                            if (movePoint.equals(tmpPoint)) GenerateFood();
-                            success = snake.move(movePoint, tmpPoint, body);
+                            success = snake.move(movePoint, foodPoints, body);
+                            if (foodPoints.contains(movePoint)) {
+                                GenerateFood();
+                                foodPoints.remove(movePoint);
+                            }
                             break;
-                        case 3:
+                        case RIGHT:
                             movePoint = new Point(++x % LENGTH, y);
-                            tmpPoint = new Point(foodPoint.x(), foodPoint.y());
-                            if (movePoint.equals(tmpPoint)) GenerateFood();
-                            success = snake.move(movePoint, tmpPoint, body);
+                            success = snake.move(movePoint, foodPoints, body);
+                            if (foodPoints.contains(movePoint)) {
+                                GenerateFood();
+                                foodPoints.remove(movePoint);
+                            }
                             break;
-                        case 1:
+                        case DOWN:
                             movePoint = new Point(x, ++y % LENGTH);
-                            tmpPoint = new Point(foodPoint.x(), foodPoint.y());
-                            if (movePoint.equals(tmpPoint)) GenerateFood();
-                            success = snake.move(movePoint, tmpPoint, body);
+                            success = snake.move(movePoint, foodPoints, body);
+                            if (foodPoints.contains(movePoint)) {
+                                GenerateFood();
+                                foodPoints.remove(movePoint);
+                            }
                             break;
                     }
                     if (!success) {
+                        int idx = 0;
                         // 删除身体上的点
                         for (var point : snake.getQueue()) {
+                            if (idx++ % 2 == 0)
+                                foodPoints.add(point);
+                            body.remove(point);
+
                             body.remove(point);
                             diePlayer.add(entry.getKey());
                         }
@@ -270,7 +308,7 @@ public class SendSnakes implements Runnable {
                 }
                 try {
                     SendUDPSnakes();
-                    Thread.sleep(100);
+                    Thread.sleep(200);
                 } catch (InterruptedException | IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -279,37 +317,12 @@ public class SendSnakes implements Runnable {
 
         /* 向每个玩家发送UDPSnakes */
         public void SendUDPSnakes() throws IOException {
-            UDPSnake snake = new UDPSnake(snakes, foodPoint);
-
-            for (var c : clientInfos) {
-                DatagramSocket socket = new DatagramSocket();
-                DatagramPacket packet = new DatagramPacket(new byte[4096], 4096, c.getIP(), c.getPORT());
-                ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
-
-                // 转为Object流
-                ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-                objectStream.writeObject(snake);
-                byte[] arr = byteArrayStream.toByteArray();
-                packet.setData(arr);//填充DatagramPacket
-                socket.send(packet);//发送
-                objectStream.close();
-                byteArrayStream.close();
-            }
+            sendUDPSnake(snakes, foodPoints, clientInfos);
         }
 
         // 在地图随机一点生成食物
         public void GenerateFood() {
-            int x = (int) (Math.random() * LENGTH);
-            int y = (int) (Math.random() * LENGTH);
-
-            Point tmp = new Point(x, y);
-            if (body.contains(tmp)) {
-                GenerateFood();
-            } else {
-//                foodPoint = new Point(x, y);
-                foodPoint.setX(x);
-                foodPoint.setY(y);
-            }
+            generateFood(body, foodPoints);
         }
     }
 }

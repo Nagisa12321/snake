@@ -1,6 +1,6 @@
-package com.jtchen.Thread;
+package com.jtchen;
 
-import com.jtchen.ClientInfo;
+import com.struct.ClientInfo;
 import com.struct.Point;
 import com.struct.Snake;
 
@@ -10,7 +10,6 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -19,15 +18,12 @@ public class UDPServerMain implements Runnable {
     public static final int PORT = 8088;
 
     public static Color randomColor() {
-        Color[] colors = {
-                Color.BLACK, Color.cyan,
-                Color.YELLOW, Color.LIGHT_GRAY,
-                Color.BLUE, Color.ORANGE,
-                Color.pink
-        };
 
-        int x = (int) (Math.random() * 100) % colors.length;
-        return colors[x];
+        float x = (float) (Math.random() * 255);
+        float y = (float) (Math.random() * 255);
+        float z = (float) (Math.random() * 255);
+
+        return Color.getHSBColor(x, y, z);
     }
 
     @Override
@@ -72,13 +68,15 @@ public class UDPServerMain implements Runnable {
                 Point p1 = new Point(1, 0);
                 Point p2 = new Point(1, 1);
                 Point p3 = new Point(1, 2);
+                Point p4 = new Point(1, 3);
 
-                Snake snake = new Snake(new Point[]{p1, p2, p3}, randomColor());
+                Snake snake = new Snake(new Point[]{p1, p2, p3, p4}, randomColor());
 
                 // 加入点集
                 body.add(p1);
                 body.add(p2);
                 body.add(p3);
+                body.add(p4);
 
                 // 在只读的HashMap 中存入Snake
                 snakes.put(name, snake);

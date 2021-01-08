@@ -48,11 +48,11 @@ public class Point implements Serializable {
 
     /* pointB 在 pointA 的什么方向 */
     // 0 上 1 下 2 左 3 右
-    public static int getDirection(Point a, Point b) {
-        if (b.x > a.x) return 3;
-        if (b.x < a.x) return 2;
-        if (b.y > a.y) return 1;
-        if (b.y < a.y) return 0;
-        else return -1;
+    public static Direction getDirection(Point a, Point b) {
+        if (b.x > a.x) return Direction.RIGHT;
+        if (b.x < a.x) return Direction.LEFT;
+        if (b.y > a.y) return Direction.DOWN;
+        if (b.y < a.y) return Direction.UP;
+        else return null;
     }
 }

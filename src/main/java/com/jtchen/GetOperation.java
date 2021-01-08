@@ -1,4 +1,4 @@
-package com.jtchen.Thread;
+package com.jtchen;
 
 import java.io.IOError;
 import java.io.IOException;

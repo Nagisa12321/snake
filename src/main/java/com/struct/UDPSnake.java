@@ -2,15 +2,16 @@ package com.struct;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class UDPSnake implements Serializable {
     private HashMap<String, Snake> snakes;
-    private Point food;
+    private HashSet<Point> foodPoints;
 
-    public UDPSnake(HashMap<String, Snake> snakes, Point food) {
+    public UDPSnake(HashMap<String, Snake> snakes, HashSet<Point> foodPoints) {
         this.snakes = snakes;
-        this.food = food;
+        this.foodPoints = foodPoints;
     }
 
 
@@ -18,7 +19,7 @@ public class UDPSnake implements Serializable {
         return snakes;
     }
 
-    public Point getFood() {
-        return food;
+    public HashSet<Point>  getFood() {
+        return foodPoints;
     }
 }
