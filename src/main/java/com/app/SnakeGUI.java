@@ -21,7 +21,7 @@ public class SnakeGUI {
     private JTextField textField1;
     private JTextField textField2;
     private JTable table1;
-    private DefaultTableModel tableModel;
+    private final DefaultTableModel tableModel;
 
     public SnakeGUI() {
 

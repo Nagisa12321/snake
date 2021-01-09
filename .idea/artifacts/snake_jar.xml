@@ -3,6 +3,8 @@
     <output-path>$PROJECT_DIR$/out/artifacts/snake_jar</output-path>
     <root id="archive" name="snake.jar">
       <element id="module-output" name="snake" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/formdev/flatlaf/0.44/flatlaf-0.44.jar" path-in-jar="/" />
+      <element id="library" level="project" name="Maven: com.formdev:flatlaf:0.44" />
     </root>
   </artifact>
 </component>

@@ -9,16 +9,9 @@ import java.util.Objects;
  * @date 2020/12/30 16:15
  */
 public class Point implements Serializable, Cloneable {
-    public void setX(int x) {
-        this.x = x;
-    }
 
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    private  int x;
-    private  int y;
+    private int x;
+    private int y;
 
     public Point(int x, int y) {
         this.x = x;

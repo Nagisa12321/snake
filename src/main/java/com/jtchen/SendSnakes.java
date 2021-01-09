@@ -16,7 +16,7 @@ public class SendSnakes implements Runnable {
 
     public static final int LENGTH = 40; // 真实长宽
 
-    private Semaphore mutex; // 用户列表互斥锁
+    private final Semaphore mutex; // 用户列表互斥锁
 
     private final Vector<ClientInfo> clientInfos; // 用户IP PORT列表
 
@@ -28,20 +28,19 @@ public class SendSnakes implements Runnable {
 
     private final HashSet<Point> body; // 身体点集
 
-    private SleepTime sleepTime;
+    private final SleepTime sleepTime;
 
     public SendSnakes(Vector<ClientInfo> clientInfos,
                       BlockingQueue<String> operation,
                       HashMap<String, Snake> snakes,
-                      HashSet<Point> body,
-                      Semaphore mutex) {
+                      HashSet<Point> body) {
         this.clientInfos = clientInfos;
         this.operation = operation;
         this.snakes = snakes;
         this.body = body;
-        this.mutex = mutex;
         this.sleepTime = new SleepTime(201);
-        foodPoints = new HashSet<>();
+        this.foodPoints = new HashSet<>();
+        this.mutex = new Semaphore(2);
 
         // 地图随机生成食物
         Point foodPoint1 = new Point(10, 10);
@@ -108,6 +107,7 @@ public class SendSnakes implements Runnable {
     }
 
     /* 根据出队的操作移动某条蛇, 并且改变蛇的方向 */
+    @SuppressWarnings("DuplicatedCode")
     public boolean moveSnake(String operation, Snake snake) throws InterruptedException {
         Direction direction = snake.getDirection();
 
@@ -233,7 +233,67 @@ public class SendSnakes implements Runnable {
             case "e":
                 GenerateFood();
                 break;
+            case "a":
+                if (direction != Direction.RIGHT) {
+                    x -= 10;
+                    Point movePoint1 = new Point(x < 0 ? LENGTH + x : x, y);
+                    snake.setDirection(Direction.LEFT);
+                    System.err.println("snake.setDirection(2);" + snake.getDirection());
 
+                    boolean res = snake.move(movePoint1, foodPoints, body);
+                    // 如果将要遇到的是食物, 则在生成食物
+                    if (foodPoints.contains(movePoint1)) {
+                        GenerateFood();
+
+                        // 表中删除该食物的点
+                        foodPoints.remove(movePoint1);
+                    }
+
+                    // 如果移动蛇前面是body则移动失败
+                    // 返回false
+                    return res;
+                }
+                break;
+            case "w":
+                if (direction != Direction.DOWN) {
+                    y -= 10;
+                    Point movePoint1 = new Point(x, y < 0 ? LENGTH + y : y);
+                    snake.setDirection(Direction.UP);
+                    /*Point tmp = new Point(foodPoint.x(), foodPoint.y());*/
+                    boolean res = snake.move(movePoint1, foodPoints, body);
+                    if (foodPoints.contains(movePoint1)) {
+                        GenerateFood();
+                        foodPoints.remove(movePoint1);
+                    }
+                    return res;
+                }
+                break;
+            case "d":
+                if (direction != Direction.LEFT) {
+                    x += 10;
+                    Point movePoint1 = new Point(x % LENGTH, y);
+                    snake.setDirection(Direction.RIGHT);
+                    boolean res = snake.move(movePoint1, foodPoints, body);
+                    if (foodPoints.contains(movePoint1)) {
+                        GenerateFood();
+                        foodPoints.remove(movePoint1);
+                    }
+                    return res;
+                }
+                break;
+            case "s":
+                if (direction != Direction.UP) {
+                    y += 10;
+                    Point movePoint1 = new Point(x, y % LENGTH);
+                    snake.setDirection(Direction.DOWN);
+                    boolean res = snake.move(movePoint1, foodPoints, body);
+                    if (foodPoints.contains(movePoint1)) {
+                        GenerateFood();
+                        foodPoints.remove(movePoint1);
+                    }
+                    return res;
+                }
+                break;
 
         }
 
@@ -254,11 +314,20 @@ public class SendSnakes implements Runnable {
     }
 
     /* 公用方法sendUDPSnake */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private static void sendUDPSnake(HashMap<String, Snake> snakes,
                                      HashSet<Point> foodPoints,
                                      Vector<ClientInfo> clientInfos,
                                      Semaphore mutex) throws IOException, InterruptedException {
         UDPSnake UDPsnake = new UDPSnake(snakes, foodPoints);
+
+        /*// 转为字符串
+        mutex.acquire(2);
+        String msg = UDPsnake.toString();
+        mutex.release(2);
+
+        //转为byte
+        byte[] msgBody = msg.getBytes(StandardCharsets.UTF_8);*/
 
         /*// 克隆snakes
         HashMap<String, Snake> tmpSnakes = new HashMap<>();
@@ -269,7 +338,17 @@ public class SendSnakes implements Runnable {
         HashSet<Point> tmpFoods = new HashSet<>();
         for (var food : foodPoints)
             tmpFoods.add(food.clone());*/
+        ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
+        // 转为Object流
+        ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
+
+        // 锁同步
+        mutex.acquire(2);
+        objectStream.writeObject(UDPsnake);
+        mutex.release(2);
+
+        byte[] arr = byteArrayStream.toByteArray();
 
         for (int i = 0; i < clientInfos.size(); i++) {
             DatagramSocket socket = new DatagramSocket();
@@ -278,22 +357,22 @@ public class SendSnakes implements Runnable {
                     65535,
                     clientInfos.get(i).getIP(),
                     clientInfos.get(i).getPORT());
-            ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
 
-            // 转为Object流
-            ObjectOutputStream objectStream = new ObjectOutputStream(byteArrayStream);
-
-            // 锁同步
-            mutex.acquire();
-            objectStream.writeObject(UDPsnake);
-            mutex.release();
-
-            byte[] arr = byteArrayStream.toByteArray();
             packet.setData(arr);//填充DatagramPacket
             socket.send(packet);//发送
-            objectStream.close();
-            byteArrayStream.close();
+
+            /*//发送给玩家
+            DatagramPacket msgPacket = new DatagramPacket(
+                    msgBody,
+                    msgBody.length,
+                    clientInfos.get(i).getIP(),
+                    clientInfos.get(i).getPORT());
+            socket.send(msgPacket);*/
+
         }
+        objectStream.close();
+        byteArrayStream.close();
+
 
     }
 
@@ -328,7 +407,7 @@ public class SendSnakes implements Runnable {
         private final HashSet<Point> body;
         private final Vector<ClientInfo> clientInfos;
         private final Semaphore mutex;
-        private SleepTime sleepTime;
+        private final SleepTime sleepTime;
 
         public PushSnakeThread(HashMap<String, Snake> snakes,
                                HashSet<Point> foodPoints,

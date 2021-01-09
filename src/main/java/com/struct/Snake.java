@@ -59,6 +59,15 @@ public class Snake implements Serializable, Cloneable {
 
     }
 
+
+    // 专用于客户端画图用
+    public Snake(Point head, Color color, Direction direction, Queue<Point> queue) {
+        this.head = head;
+        this.color = color;
+        this.direction = direction;
+        this.queue = queue;
+    }
+
     /* 通过前面的点来判断蛇该做出什么行为 */
     public boolean move(Point point, Set<Point> foodPoints, Set<Point> body) {
         // 如果前面的点是body, 则退出游戏

@@ -6,19 +6,19 @@ import com.struct.Snake;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 
 @SuppressWarnings("InfiniteLoopStatement")
 public class UDPServerMain implements Runnable {
     public static final int PORT = 8088;
-    private Semaphore mutex = new Semaphore(1);
 
     public static Color randomColor() {
 
@@ -51,8 +51,7 @@ public class UDPServerMain implements Runnable {
                 clientInfos,
                 operation,
                 snakes,
-                body,
-                mutex)).start();
+                body)).start();
         new Thread(new GetOperation(operation)).start();
 
         while (true) {
@@ -65,9 +64,7 @@ public class UDPServerMain implements Runnable {
                 InetAddress clientIP = packet.getAddress();
 
                 // 新增玩家
-                /*mutex.acquire();*/
                 clientInfos.add(new ClientInfo(clientPort, clientIP));
-                /*mutex.release();*/
 
                 // 新增蛇
                 String name = new String(packet.getData(),

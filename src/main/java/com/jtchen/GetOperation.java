@@ -1,22 +1,21 @@
 package com.jtchen;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 
-public class GetOperation implements Runnable{
+public class GetOperation implements Runnable {
     public static final int PORT = 8090;
 
-    private BlockingQueue<String> operation;
+    private final BlockingQueue<String> operation;
 
-    public GetOperation( BlockingQueue<String> operation) {
+    public GetOperation(BlockingQueue<String> operation) {
         this.operation = operation;
     }
 
+    @SuppressWarnings("InfiniteLoopStatement")
     public void run() {
         // 不断等待接收链接
         while (true) {
@@ -32,7 +31,7 @@ public class GetOperation implements Runnable{
 
                 // 加入队列中, 让SendSnakes解析操作并且处理
                 operation.put(opStr);
-            } catch (IOException|InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 System.err.println(e.getMessage() + "(GetOperation)");
             }
         }

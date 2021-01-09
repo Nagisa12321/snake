@@ -7,7 +7,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 
 public class UDPClientSend implements Runnable {
@@ -28,9 +27,17 @@ public class UDPClientSend implements Runnable {
         put(KeyEvent.VK_P, "p");
         put(KeyEvent.VK_H, "h");
         put(KeyEvent.VK_E, "e");
+        put(KeyEvent.VK_W, "w");
+        put(KeyEvent.VK_S, "s");
+        put(KeyEvent.VK_A, "a");
+        put(KeyEvent.VK_D, "d");
     }};
 
-    public UDPClientSend(InetAddress serverIP, int serverPort, String playerName, DatagramSocket socket, BlockingQueue<Integer> keyboardQueue) {
+    public UDPClientSend(InetAddress serverIP,
+                         int serverPort,
+                         String playerName,
+                         DatagramSocket socket,
+                         BlockingQueue<Integer> keyboardQueue) {
         this.serverIP = serverIP;
         this.serverPort = serverPort;
         this.playerName = playerName;
@@ -39,6 +46,7 @@ public class UDPClientSend implements Runnable {
     }
 
 
+    @SuppressWarnings({"InfiniteLoopStatement", "BusyWait"})
     public void run() {
         try {
             while (true) {

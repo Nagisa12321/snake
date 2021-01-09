@@ -79,7 +79,7 @@ public class UDPClient extends Frame implements Runnable {
     }
 
     public void run() {
-        DatagramSocket socket = establish(IP, 8088, playerName);
+        DatagramSocket socket = establish(IP, playerName);
         if (socket == null) {
             this.dispose();
             return;
@@ -90,7 +90,7 @@ public class UDPClient extends Frame implements Runnable {
         new Thread(new UDPClientReceive(socket, drawQueue)).start();
 
         //线程开始后才加键盘监听
-        addKeyListener(new KeyMonitor(this));
+        addKeyListener(new KeyMonitor());
 
         while (true) {
             try {
@@ -196,12 +196,12 @@ public class UDPClient extends Frame implements Runnable {
         return new Point(point.x() + 1, point.y() + 2);
     }
 
-    private DatagramSocket establish(InetAddress serverIp, int serverPort, String name) {
+    private DatagramSocket establish(InetAddress serverIp, String name) {
         try {
             //准备好发送的包，端口随机
             DatagramSocket socket = new DatagramSocket(0);
             byte[] sendName = name.getBytes(StandardCharsets.UTF_8);
-            DatagramPacket request = new DatagramPacket(sendName, sendName.length, serverIp, serverPort);
+            DatagramPacket request = new DatagramPacket(sendName, sendName.length, serverIp, 8088);
             DatagramPacket respond = new DatagramPacket(new byte[1], 1);
 
             //poke一下服务器,超时抛异常
@@ -218,8 +218,7 @@ public class UDPClient extends Frame implements Runnable {
 
 
     private class KeyMonitor extends KeyAdapter {
-        private UDPClient window;
-        private HashMap<Direction, List<Integer>> dMap = new HashMap<>() {{
+        private final HashMap<Direction, List<Integer>> dMap = new HashMap<>() {{
             put(Direction.UP, new ArrayList<>() {{
                 add(KeyEvent.VK_LEFT);
                 add(KeyEvent.VK_DOWN);
@@ -242,8 +241,7 @@ public class UDPClient extends Frame implements Runnable {
             }});
         }};
 
-        public KeyMonitor(UDPClient window) {
-            this.window = window;
+        public KeyMonitor() {
         }
 
         @Override
@@ -400,6 +398,17 @@ public class UDPClient extends Frame implements Runnable {
                     // 随机生成食物
 
                     keyboardQueue.put(KeyEvent.VK_E);
+                } else if (e.getKeyCode() == KeyEvent.VK_W) {
+
+                    // 虫洞穿越
+
+                    keyboardQueue.put(KeyEvent.VK_W);
+                } else if (e.getKeyCode() == KeyEvent.VK_S) {
+                    keyboardQueue.put(KeyEvent.VK_S);
+                } else if (e.getKeyCode() == KeyEvent.VK_A) {
+                    keyboardQueue.put(KeyEvent.VK_A);
+                } else if (e.getKeyCode() == KeyEvent.VK_D) {
+                    keyboardQueue.put(KeyEvent.VK_D);
                 }
             } catch (InterruptedException interruptedException) {
                 System.err.println(interruptedException.getMessage());

@@ -1,7 +1,6 @@
 package com.struct;
 
 import java.net.InetAddress;
-import java.util.Vector;
 
 public class ClientInfo {
     private final int PORT;
