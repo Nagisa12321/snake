@@ -4,9 +4,13 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.jtchen.UDPServer;
 
 import com.cc.UDPClient;
+import com.machine.MachineClient;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
 
 /**
@@ -21,6 +25,8 @@ public class SnakeGUI {
     private JTextField textField1;
     private JTextField textField2;
     private JTable table1;
+    private JTextField textField3;
+    private JButton JOINAMICHINEButton;
     private final DefaultTableModel tableModel;
 
     public SnakeGUI() {
@@ -49,6 +55,20 @@ public class SnakeGUI {
                 System.err.println(a.getMessage());
             }
 
+        });
+        JOINAMICHINEButton.addActionListener(e -> {
+            String mcName = textField3.getText();
+            String host = textField1.getText();
+            try {
+                if (mcName.isEmpty() || host.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    new Thread(new MachineClient(mcName, host)).start();
+                }
+            } catch (UnknownHostException a) {
+                JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
+                System.err.println(a.getMessage());
+            }
         });
     }
 

@@ -197,6 +197,10 @@ public class UDPClient extends Frame implements Runnable {
     }
 
     private DatagramSocket establish(InetAddress serverIp, String name) {
+        return getDatagramSocket(serverIp, name);
+    }
+
+    public static DatagramSocket getDatagramSocket(InetAddress serverIp, String name) {
         try {
             //准备好发送的包，端口随机
             DatagramSocket socket = new DatagramSocket(0);
