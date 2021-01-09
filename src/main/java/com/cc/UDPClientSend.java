@@ -31,6 +31,8 @@ public class UDPClientSend implements Runnable {
         put(KeyEvent.VK_S, "s");
         put(KeyEvent.VK_A, "a");
         put(KeyEvent.VK_D, "d");
+        put(KeyEvent.VK_T, "t");
+        put(KeyEvent.VK_Y, "y");
     }};
 
     public UDPClientSend(InetAddress serverIP,

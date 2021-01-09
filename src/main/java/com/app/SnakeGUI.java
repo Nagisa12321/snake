@@ -1,7 +1,7 @@
 package com.app;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.jtchen.UDPServerMain;
+import com.jtchen.UDPServer;
 
 import com.cc.UDPClient;
 
@@ -32,7 +32,7 @@ public class SnakeGUI {
         textField2.setText("cc");
         HOSTAGAMEButton.addActionListener(e -> {
             HOSTAGAMEButton.setEnabled(false);
-            new Thread(new UDPServerMain()).start();
+            new Thread(new UDPServer()).start();
         });
         JOINAGAMEButton.addActionListener(e -> {
             String name = textField2.getText();

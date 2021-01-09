@@ -6,12 +6,12 @@ import java.net.DatagramSocket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.BlockingQueue;
 
-public class GetOperation implements Runnable {
+public class UDPServerReceive implements Runnable {
     public static final int PORT = 8090;
 
     private final BlockingQueue<String> operation;
 
-    public GetOperation(BlockingQueue<String> operation) {
+    public UDPServerReceive(BlockingQueue<String> operation) {
         this.operation = operation;
     }
 
@@ -32,7 +32,7 @@ public class GetOperation implements Runnable {
                 // 加入队列中, 让SendSnakes解析操作并且处理
                 operation.put(opStr);
             } catch (IOException | InterruptedException e) {
-                System.err.println(e.getMessage() + "(GetOperation)");
+                System.err.println(e.getMessage() + "(UDPServerReceive)");
             }
         }
     }

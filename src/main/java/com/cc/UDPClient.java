@@ -1,6 +1,6 @@
 package com.cc;
 
-import com.jtchen.SendSnakes;
+import com.jtchen.UDPServerSend;
 import com.struct.Direction;
 import com.struct.Point;
 import com.struct.Snake;
@@ -33,7 +33,7 @@ public class UDPClient extends Frame implements Runnable {
 
     public static final int BLOCK = 18; // 方格长宽
 
-    public static final int LENGTH = SendSnakes.LENGTH; // 真实长宽
+    public static final int LENGTH = UDPServerSend.LENGTH; // 真实长宽
 
     private static final int LENGTH_ROW = LENGTH + 2; // 界面方格行
 
@@ -409,6 +409,16 @@ public class UDPClient extends Frame implements Runnable {
                     keyboardQueue.put(KeyEvent.VK_A);
                 } else if (e.getKeyCode() == KeyEvent.VK_D) {
                     keyboardQueue.put(KeyEvent.VK_D);
+                } else if (e.getKeyCode() == KeyEvent.VK_T) {
+
+                    // 除了头部方向调转
+                    keyboardQueue.put(KeyEvent.VK_T);
+
+                } else if (e.getKeyCode() == KeyEvent.VK_Y) {
+
+                    // 方向调转
+                    keyboardQueue.put(KeyEvent.VK_Y);
+
                 }
             } catch (InterruptedException interruptedException) {
                 System.err.println(interruptedException.getMessage());

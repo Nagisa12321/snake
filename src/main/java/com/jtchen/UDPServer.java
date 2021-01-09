@@ -17,7 +17,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @SuppressWarnings("InfiniteLoopStatement")
-public class UDPServerMain implements Runnable {
+public class UDPServer implements Runnable {
     public static final int PORT = 8088;
 
     public static Color randomColor() {
@@ -47,12 +47,12 @@ public class UDPServerMain implements Runnable {
         HashSet<Point> body = new HashSet<>();
 
         // 开启收线程
-        new Thread(new SendSnakes(
+        new Thread(new UDPServerSend(
                 clientInfos,
                 operation,
                 snakes,
                 body)).start();
-        new Thread(new GetOperation(operation)).start();
+        new Thread(new UDPServerReceive(operation)).start();
 
         while (true) {
             try (DatagramSocket socket = new DatagramSocket(PORT)) {

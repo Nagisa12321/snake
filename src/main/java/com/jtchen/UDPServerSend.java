@@ -12,7 +12,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
 @SuppressWarnings("InfiniteLoopStatement")
-public class SendSnakes implements Runnable {
+public class UDPServerSend implements Runnable {
 
     public static final int LENGTH = 40; // ÕæÊµ³¤¿í
 
@@ -30,10 +30,10 @@ public class SendSnakes implements Runnable {
 
     private final SleepTime sleepTime;
 
-    public SendSnakes(Vector<ClientInfo> clientInfos,
-                      BlockingQueue<String> operation,
-                      HashMap<String, Snake> snakes,
-                      HashSet<Point> body) {
+    public UDPServerSend(Vector<ClientInfo> clientInfos,
+                         BlockingQueue<String> operation,
+                         HashMap<String, Snake> snakes,
+                         HashSet<Point> body) {
         this.clientInfos = clientInfos;
         this.operation = operation;
         this.snakes = snakes;
@@ -292,6 +292,39 @@ public class SendSnakes implements Runnable {
                         foodPoints.remove(movePoint1);
                     }
                     return res;
+                }
+                break;
+            case "t":
+                Stack<Point> stack = new Stack<>();
+                while (!snake.getQueue().isEmpty())
+                    stack.push(snake.getQueue().poll());
+                while (!stack.isEmpty())
+                    snake.getQueue().offer(stack.pop());
+                break;
+            case "y":
+                Stack<Point> stack1 = new Stack<>();
+                Point tmp = new Point(
+                        snake.getQueue().peek().x(),
+                        snake.getQueue().peek().y());
+                while (!snake.getQueue().isEmpty())
+                    stack1.push(snake.getQueue().poll());
+                while (!stack1.isEmpty())
+                    snake.getQueue().offer(stack1.pop());
+                snake.getHead().setX(tmp.x());
+                snake.getHead().setY(tmp.y());
+                switch (snake.getDirection()) {
+                    case LEFT:
+                        snake.setDirection(Direction.RIGHT);
+                        break;
+                    case DOWN:
+                        snake.setDirection(Direction.UP);
+                        break;
+                    case RIGHT:
+                        snake.setDirection(Direction.LEFT);
+                        break;
+                    case UP:
+                        snake.setDirection(Direction.DOWN);
+                        break;
                 }
                 break;
 
