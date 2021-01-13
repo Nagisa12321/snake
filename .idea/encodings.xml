@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/src/main/java/com/app/Music.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/app/SnakeGUI.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/cc/UDPClient.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/PlayerMap.java" charset="GBK" />
@@ -8,6 +9,9 @@
     <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/UDPServerReceive.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/jtchen/UDPServerSend.java" charset="GBK" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/struct/ClientInfo.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/Interface/Sounds/bg.ogg" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/Interface/Sounds/bg.ogg" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/Interface/Sounds/bg.ogg" charset="UTF-8" />
     <file url="PROJECT" charset="GBK" />
   </component>
 </project>

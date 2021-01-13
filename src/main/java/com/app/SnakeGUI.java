@@ -49,6 +49,9 @@ public class SnakeGUI {
                 } else {
                     Runnable client = new UDPClient(name, host, tableModel);
                     new Thread(client).start();
+
+                    // 开启音乐
+                    /*Music.play("./src/main/resources/bg.ogg",true);*/
                 }
             } catch (UnknownHostException a) {
                 JOptionPane.showMessageDialog(null, "请好好输入信息O(∩_∩)O", "!!!!!!!", JOptionPane.ERROR_MESSAGE);
